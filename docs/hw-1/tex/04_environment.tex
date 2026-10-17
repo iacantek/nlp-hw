@@ -3,37 +3,33 @@
 
 \subsection{Hardware Environment}
 
-The experiments will be conducted using Google Colab (free tier), targeting a single NVIDIA T4 or L4 GPU (16GB-24GB VRAM) and standard system RAM.
+The experiments will run on Google Colab (free tier), using a single NVIDIA T4.
 
 \subsection{Software Environment}
 
 \begin{itemize}
     \item \textbf{Language:} Python 3.10+
     \item \textbf{Frameworks:} PyTorch, Hugging Face \texttt{transformers}
-    \item \textbf{Inference Optimization:} \texttt{vLLM} for high-throughput batch inference to minimize compute time.
+    \item \textbf{Inference Optimization:} \texttt{vLLM} for fast batch inference to minimize compute time.
 \end{itemize}
 
 \subsection{Dataset Requirements}
 
-We will not train a model. We will construct an evaluation dataset of 500 examples derived from the multilingual MKQA or TyDi QA benchmarks. The dataset will include English and Korean claim pairs embedded into strict declarative templates to eliminate structural confounds. To mathematically verify semantic equivalence, back-translation and embedding-cosine-similarity checks will be utilized.
+No model training is required. Instead, an evaluation dataset of 500 examples will be created from the multilingual MKQA or TyDi QA benchmarks. The dataset pairs English and Korean claims inserted into simple, consistent sentence templates to prevent structural differences. To ensure translations convey the same meaning, semantic consistency will be checked using back-translation and embedding cosine similarity.
 
 \subsection{Model Selection}
 
 \begin{itemize}
-    \item \textbf{Qwen-2.5-7B-Instruct:} Selected for its state-of-the-art multilingual capabilities at a parameter scale feasible for a single T4 GPU.
-    \item \textbf{Llama-3-8B-Instruct:} Selected as a strong baseline with well-documented English-centric pretraining biases.
+    \item \textbf{Qwen-2.5-7B-Instruct:} Chosen for its strong multilingual performance and a size suitable for a single T4 GPU.
+    \item \textbf{Llama-3-8B-Instruct:} Chosen as a widely used baseline with well-documented English-centric bias.
 \end{itemize}
 
 \subsection{Experimental Pipeline}
 
 \begin{enumerate}
-    \item \textit{Data Prep:} Extract Question, Gold Answer, and generate a Plausible False Answer.
-    \item \textit{Templating:} Inject answers into standardized EN and KO templates.
-    \item \textit{Prompting:} Feed the LLM the question alongside the two conflicting context documents.
-    \item \textit{Inference:} Generate answers using greedy decoding (temperature=0.0) for reproducibility.
-    \item \textit{Evaluation:} Automatically extract the selected claim via semantic fact extraction using an LLM-as-a-judge, mitigating string-matching brittleness.
+    \item \textit{Data preparation:} Extract the question and correct answer, then generate a plausible false answer.
+    \item \textit{Templating:} Insert answers into standardized English and Korean sentence templates.
+    \item \textit{Prompting:} Present the model with the question alongside the two conflicting claims.
+    \item \textit{Inference:} Generate answers using greedy decoding (temperature = 0) for reproducible outputs.
+    \item \textit{Evaluation:} Determine which claim the model chose using an LLM-as-a-judge, avoiding the fragility of exact string matching.
 \end{enumerate}
-
-\subsection{Reproducibility}
-
-All code, system prompts, templating scripts, and generated evaluation datasets will be provided in a GitHub repository. Fixed seeds (e.g., \texttt{seed=42}) will be utilized for all prompt-shuffling and inference steps to ensure deterministic outcomes.
