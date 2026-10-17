@@ -1,1 +1,17 @@
-tbd
+\section{Hypothesis}
+\label{sec:hypothesis}
+
+\subsection{Primary Hypothesis}
+Multilingual LLMs exhibit a "Language-as-Authority" bias: when resolving direct factual contradictions across languages, the model will disproportionately select the claim presented in English or the query language, effectively overriding both the alternative evidence and its own parametric knowledge.
+
+\subsection{Justification and Literature Support}
+
+This hypothesis is motivated by the disproportionate representation of English in pretraining corpora, which heavily skews the model's internal confidence representations. \citet{li2025language} observe that English acts as a "semantic attractor" during reasoning, while \citet{ki2025linguistic} demonstrate a citation preference for English. We hypothesize this bias extends beyond citation mechanics into epistemic trust.
+
+\subsection{Experimental Validation and Falsifiability}
+
+The hypothesis is strictly falsifiable using a counterbalanced design. Given an English Query, if the model selects Claim A when presented as \texttt{[English: Claim A, Korean: Claim B]}, but selects Claim B when presented as \texttt{[Korean: Claim A, English: Claim B]}, the hypothesis is supported—the model is blindly trusting the English text. Conversely, if the model consistently selects Claim A in both conditions, the hypothesis is falsified; the model is relying on its parametric knowledge (or robust fact-checking) rather than linguistic bias.
+
+\subsection{Experimental Controls}
+
+To prevent confounding variables, we control: (1) \textit{Ordering bias} by randomly shuffling which language appears first in the prompt; (2) \textit{Translation artifacts} by using rigid, symmetric declarative templates rather than wild-caught text; (3) \textit{Parametric bias} by balancing conditions so every claim appears equally in both languages; and (4) \textit{Query language alignment} by explicitly testing both English and Korean queries.
