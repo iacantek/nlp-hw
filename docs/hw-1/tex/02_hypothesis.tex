@@ -13,7 +13,7 @@ This hypothesis is motivated by the predominance of English in pre-training data
 
 The hypothesis can be tested and falsified using a counterbalanced setup across both English and Korean queries. For each question, the model is evaluated on \texttt{[English: Claim A, Korean: Claim B]} and the language-swapped pair \texttt{[Korean: Claim A, English: Claim B]}.
 
-If the model selects Claim A in the first pair but switches to Claim B in the second pair under both English and Korean queries, the hypothesis is supported—the choice is driven by the English language. Conversely, the hypothesis is falsified under two clear conditions: (1) if the model consistently selects Claim A in both pairs (showing that prior knowledge or factual accuracy drives the decision), or (2) if the model favors the English claim for English queries but switches to the Korean claim for Korean queries (showing that query-language alignment outweighs global English authority).
+If the model selects Claim A in the first pair but switches to Claim B in the second pair under both English and Korean queries, the hypothesis is supported—the choice is driven by the English language. Conversely, the hypothesis is falsified under two clear conditions: (1) if the model consistently selects Claim A in both pairs (showing that prior knowledge or factual accuracy drives the decision), or (2) if the model favors the English claim for English queries but switches to the Korean claim for Korean queries (showing that query-language alignment outweighs English authority).
 
 \subsection{Experimental Controls}
 
