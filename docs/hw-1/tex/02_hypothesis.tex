@@ -2,16 +2,24 @@
 \label{sec:hypothesis}
 
 \subsection{Primary Hypothesis}
-Multilingual LLMs exhibit a "Language-as-Authority" bias: when resolving direct factual contradictions across languages, the model will disproportionately select the claim presented in English or the query language, effectively overriding both the alternative evidence and its own parametric knowledge.
+
+Multilingual LLMs exhibit a \enquote{Language-as-Authority} bias: when presented with directly conflicting factual claims in different languages, the model will systematically favor the claim written in English (or the query language), regardless of factual accuracy or prior knowledge.
 
 \subsection{Justification and Literature Support}
 
-This hypothesis is motivated by the disproportionate representation of English in pretraining corpora, which heavily skews the model's internal confidence representations. \cite{li2025} observe that English acts as a "semantic attractor" during reasoning, while \cite{ki2025} demonstrate a citation preference for English. We hypothesize this bias extends beyond citation mechanics into epistemic trust.
+This hypothesis is motivated by the predominance of English in pre-training data, which leads models to associate English text with higher confidence. Previous studies show that English can act as a \enquote{semantic attractor} during reasoning \cite{li2025} and that models preferentially cite English documents \cite{ki2025}. This bias is expected to extend beyond citation habits into actual factual trust.
 
 \subsection{Experimental Validation and Falsifiability}
 
-The hypothesis is strictly falsifiable using a counterbalanced design. Given an English Query, if the model selects Claim A when presented as \texttt{[English: Claim A, Korean: Claim B]}, but selects Claim B when presented as \texttt{[Korean: Claim A, English: Claim B]}, the hypothesis is supported—the model is blindly trusting the English text. Conversely, if the model consistently selects Claim A in both conditions, the hypothesis is falsified; the model is relying on its parametric knowledge (or robust fact-checking) rather than linguistic bias.
+The hypothesis can be tested and falsified using a counterbalanced setup. For example, given an English query: if the model selects Claim A in \texttt{[English: Claim A, Korean: Claim B]}, but switches to Claim B in \texttt{[Korean: Claim A, English: Claim B]}, the hypothesis is supported—the choice is driven by the language of the claim. Conversely, if the model consistently selects Claim A in both cases, the hypothesis is falsified, indicating that the decision is guided by prior knowledge or factual correctness rather than language bias.
 
 \subsection{Experimental Controls}
 
-To prevent confounding variables, we control: (1) \textit{Ordering bias} by randomly shuffling which language appears first in the prompt; (2) \textit{Translation artifacts} by using rigid, symmetric declarative templates rather than wild-caught text; (3) \textit{Parametric bias} by balancing conditions so every claim appears equally in both languages; and (4) \textit{Query language alignment} by explicitly testing both English and Korean queries.
+To prevent confounding factors, the following four controls are applied.
+
+\begin{enumerate}
+    \item \textit{Ordering bias} is addressed by shuffling which language appears first in the prompt.
+    \item \textit{Translation artifacts} are minimized by using uniform declarative templates rather than unstructured web text.
+    \item \textit{Prior knowledge bias} is mitigated by balancing conditions so each claim appears equally in both languages.
+    \item \textit{Query language alignment} is accounted for by testing both English and Korean queries.
+\end{enumerate}
