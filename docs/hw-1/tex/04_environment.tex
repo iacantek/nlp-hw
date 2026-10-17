@@ -3,33 +3,22 @@
 
 \subsection{Hardware Environment}
 
-The experiments will run on Google Colab (free tier), using a single NVIDIA T4.
+The experiments will run on Google Colab (free tier), using a single NVIDIA T4 GPU.
 
 \subsection{Software Environment}
 
 \begin{itemize}
     \item \textbf{Language:} Python 3.10+
-    \item \textbf{Frameworks:} PyTorch, Hugging Face \texttt{transformers}
-    \item \textbf{Inference Optimization:} \texttt{vLLM} for fast batch inference to minimize compute time.
+    \item \textbf{Frameworks:} PyTorch, Hugging Face \texttt{transformers}, and \texttt{bitsandbytes} (using 8-bit quantization so 7B--8B models fit comfortably within the 15 GB T4 VRAM limit).
 \end{itemize}
 
 \subsection{Dataset Requirements}
 
-No model training is required. Instead, an evaluation dataset of 500 examples will be created from the multilingual MKQA or TyDi QA benchmarks. The dataset pairs English and Korean claims inserted into simple, consistent sentence templates to prevent structural differences. To ensure translations convey the same meaning, semantic consistency will be checked using back-translation and embedding cosine similarity.
+No model training is required. Instead, an evaluation dataset of 150 culturally neutral question-answer pairs will be filtered from the multilingual MKQA benchmark, which provides aligned English and Korean questions and ground-truth entity answers. Each true answer is paired with a plausible false answer of the same entity type, and both are inserted into a uniform English and Korean sentence template to prevent structural differences.
 
 \subsection{Model Selection}
 
 \begin{itemize}
-    \item \textbf{Qwen-2.5-7B-Instruct:} Chosen for its strong multilingual performance and a size suitable for a single T4 GPU.
-    \item \textbf{Llama-3-8B-Instruct:} Chosen as a widely used baseline with well-documented English-centric bias.
+    \item \textbf{Qwen-2.5-7B-Instruct:} Chosen for its strong multilingual performance at a size suitable for a single T4 GPU.
+    \item \textbf{Llama-3.1-8B-Instruct:} Chosen as a widely used baseline with multilingual support and a well-documented English-centric pre-training distribution.
 \end{itemize}
-
-\subsection{Experimental Pipeline}
-
-\begin{enumerate}
-    \item \textit{Data preparation:} Extract the question and correct answer, then generate a plausible false answer.
-    \item \textit{Templating:} Insert answers into standardized English and Korean sentence templates.
-    \item \textit{Prompting:} Present the model with the question alongside the two conflicting claims.
-    \item \textit{Inference:} Generate answers using greedy decoding (temperature = 0) for reproducible outputs.
-    \item \textit{Evaluation:} Determine which claim the model chose using an LLM-as-a-judge, avoiding the fragility of exact string matching.
-\end{enumerate}

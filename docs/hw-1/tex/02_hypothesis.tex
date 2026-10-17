@@ -3,23 +3,26 @@
 
 \subsection{Primary Hypothesis}
 
-Multilingual LLMs exhibit a \enquote{Language-as-Authority} bias: when presented with directly conflicting factual claims in different languages, the model will systematically favor the claim written in English (or the query language), regardless of factual accuracy or prior knowledge.
+Multilingual LLMs exhibit an English \enquote{Language-as-Authority} bias: when presented with directly conflicting factual claims in English and Korean, the model will systematically favor the claim written in English across both English and Korean queries, regardless of factual accuracy or prior knowledge.
 
 \subsection{Justification and Literature Support}
 
-This hypothesis is motivated by the predominance of English in pre-training data, which leads models to associate English text with higher confidence. Previous studies show that English can act as a \enquote{semantic attractor} during reasoning \cite{li2025} and that models preferentially cite English documents \cite{ki2025}. This bias is expected to extend beyond citation habits into actual factual trust.
+This hypothesis is motivated by the predominance of English in pre-training data, which leads models to associate English text with higher confidence. While recent studies show that multilingual RAG (mRAG) systems preferentially cite English documents \parencite{ki2025, park2025} and that English acts as a \enquote{semantic attractor} during reasoning \parencite{li2025}, it remains unclear whether models actually trust English facts more when sources directly contradict each other. If models implicitly favor English evidence over local languages, deploying mRAG in non-English regions carries a severe risk: English misinformation could override accurate Korean facts. By pairing contradictory claims across English and Korean and swapping their languages, this study tests whether citation bias extends into actual factual trust.
 
 \subsection{Experimental Validation and Falsifiability}
 
-The hypothesis can be tested and falsified using a counterbalanced setup. For example, given an English query: if the model selects Claim A in \texttt{[English: Claim A, Korean: Claim B]}, but switches to Claim B in \texttt{[Korean: Claim A, English: Claim B]}, the hypothesis is supported—the choice is driven by the language of the claim. Conversely, if the model consistently selects Claim A in both cases, the hypothesis is falsified, indicating that the decision is guided by prior knowledge or factual correctness rather than language bias.
+The hypothesis can be tested and falsified using a counterbalanced setup across both English and Korean queries. For each question, the model is evaluated on \texttt{[English: Claim A, Korean: Claim B]} and the language-swapped pair \texttt{[Korean: Claim A, English: Claim B]}.
+
+If the model selects Claim A in the first pair but switches to Claim B in the second pair under both English and Korean queries, the hypothesis is supported—the choice is driven by the English language. Conversely, the hypothesis is falsified under two clear conditions: (1) if the model consistently selects Claim A in both pairs (showing that prior knowledge or factual accuracy drives the decision), or (2) if the model favors the English claim for English queries but switches to the Korean claim for Korean queries (showing that query-language alignment outweighs global English authority).
 
 \subsection{Experimental Controls}
 
-To prevent confounding factors, the following four controls are applied.
+To prevent confounding factors, five controls are applied:
 
 \begin{enumerate}
     \item \textit{Ordering bias} is addressed by shuffling which language appears first in the prompt.
-    \item \textit{Translation artifacts} are minimized by using uniform declarative templates rather than unstructured web text.
-    \item \textit{Prior knowledge bias} is mitigated by balancing conditions so each claim appears equally in both languages.
-    \item \textit{Query language alignment} is accounted for by testing both English and Korean queries.
+    \item \textit{Translation artifacts} are minimized by using uniform declarative sentence templates rather than unstructured web text.
+    \item \textit{Prior knowledge bias} is controlled by first testing the model without context (closed-book) in both languages, separating known facts from unknown facts.
+    \item \textit{Cultural entity bias} is avoided by selecting culturally neutral facts.
+    \item \textit{Query language alignment} is accounted for by testing every claim pair under both English and Korean queries.
 \end{enumerate}
