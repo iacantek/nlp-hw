@@ -1,14 +1,18 @@
 \section{Paper Survey}
 \label{sec:paper_survey}
 
-Recent literature has increasingly scrutinized the robustness of Multilingual Retrieval-Augmented Generation (mRAG) systems, identifying critical vulnerabilities in how models process cross-lingual context.
+Recent research has examined the reliability of Multilingual Retrieval-Augmented Generation (mRAG) systems, pointing out clear vulnerabilities in how models process cross-lingual context.
 
-\cite{wang2026} demonstrated that mRAG rerankers suffer from severe language bias, systematically suppressing answer-critical documents that do not match the query language or English. While their work focuses on the retrieval pipeline, our research shifts the focus to the generator, examining how the LLM arbitrates between evidence \textit{after} retrieval.
+\cite{wang2026} showed that mRAG rerankers suffer from strong language bias, often overlooking key documents that are not written in English or the query language. While their work focuses on retrieval and reranking, this project looks at the generator, examining how the LLM decides between conflicting evidence after documents have been retrieved.
 
-Investigating generator behavior, \cite{ki2025} utilized model internals to reveal that LLMs preferentially cite English sources when given a noisy mixture of multilingual documents, occasionally trading off document relevance for language preference. Similarly, \cite{park2025} found that generators exhibit a strong preference for the query language or Latin scripts, which can lead to inconsistent responses when multilingual sources conflict. However, both studies measure citation probability from a general context mixture. Our proposed work differs by enforcing a strict, zero-sum factual contradiction (e.g., Claim A vs. Claim B) to explicitly measure epistemic authority rather than mere citation preference.
+Turning to generator behavior, \cite{ki2025} analyzed model internals to show that LLMs tend to cite English sources when given a mix of multilingual documents, sometimes favoring language over relevance.
 
-Furthermore, \cite{qi2025} investigated the consistency of multilingual context utilization, finding that while LLMs can extract facts from non-query languages, the presence of distractor texts in the query language severely degrades performance. Finally, \cite{li2025} characterized "language drift," noting that English serves as a semantic attractor that disrupts decoding.
+Similarly, \cite{park2025} found that generators prefer the query language or Latin scripts, leading to inconsistent answers when multilingual sources conflict. However, both studies mainly measure citation frequency in general document mixtures. In contrast, this project directly pits two contradictory claims against each other (e.g., Claim A vs. Claim B) to test which language the model actually trusts, rather than just which document it cites.
+
+In addition, \cite{qi2025} evaluated how models use multilingual context, finding that while LLMs can extract facts from other languages, irrelevant text in the query language significantly hurts performance.
+
+Finally, \cite{li2025} studied \enquote{language drift}, showing that English can act as a \enquote{semantic attractor} that pulls the model during generation.
 
 \subsection{Synthesis and Gap}
 
-Collectively, the literature establishes that models are distracted by, and preferentially cite, English or query-aligned text. However, no existing work has isolated whether this preference constitutes an \textit{epistemic bias}—that is, whether the model fundamentally trusts facts written in English more than facts written in other languages. By deploying a counterbalanced factual-reversal design, our work isolates the specific variable of Language-as-Authority, filling a critical gap in understanding cross-lingual conflict resolution.
+Together, these studies show that models are influenced by English or query-aligned text and tend to cite it more often. However, existing work has not determined whether this is merely a citation habit or an actual trust bias—that is, whether the model genuinely believes facts written in English over those in other languages. By using a balanced design that swaps the languages of conflicting facts, this project isolates language bias from prior knowledge, addressing an important gap in how models resolve cross-lingual factual conflicts.
