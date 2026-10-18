@@ -222,3 +222,8 @@ __marimo__/
 
 # Local files
 local
+*.aux
+*.bcf
+*.out
+*.pdf
+*.xml
