@@ -219,3 +219,11 @@ __marimo__/
 
 # macOS Metadata
 .DS_Store
+
+# Local files
+local
+*.aux
+*.bcf
+*.out
+*.pdf
+*.xml

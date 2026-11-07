@@ -1,1 +1,35 @@
-tbd
+\section{Hypothesis}
+\label{sec:hypothesis}
+
+\subsection{Primary Hypothesis}
+
+Multilingual LLMs exhibit a systematic language preference bias favoring English and the query language during retrieval, reranking, and citation \parencite{ki2025,wang2026}: when presented with directly conflicting factual claims in English and Korean, the model will systematically favor the claim written in English across both English and Korean queries, regardless of factual accuracy or prior knowledge.
+
+\subsection{Justification and Literature Support}
+
+This hypothesis is motivated by the predominance of English in pre-training data \parencite{li2025}, where models exhibit lower entropy and higher prediction confidence for English text \parencite{ki2025}. Recent studies demonstrate that multilingual RAG (mRAG) systems preferentially cite English documents \parencite{ki2025} and that English acts as a \enquote{semantic attractor} \parencite{li2025} during multilingual generation and reasoning. Furthermore, language preference can lead models to cite irrelevant English documents over relevant non-English sources, which risks marginalizing non-English sources and reinforcing language hierarchies \parencite{ki2025}.
+
+However, it remains unclear whether models actually trust English facts more when sources directly contradict each other. While unexamined citation biases may degrade system performance across languages \parencite{ki2025,park2025}, the claim that English misinformation could override accurate Korean facts is not directly proven by the literature. Finally, by pairing contradictory claims across English and Korean and swapping their languages, this study tests whether citation bias extends into actual factual trust.
+
+\subsection{Experimental Validation and Falsifiability}
+
+The hypothesis can be tested and falsified using a counterbalanced setup across both English and Korean queries. For each question, the model is evaluated on \texttt{[English: Claim A, Korean: Claim B]} and the language-swapped pair \texttt{[Korean: Claim A, English: Claim B]}.
+
+If the model selects Claim A in the first pair but switches to Claim B in the second pair under both English and Korean queries, the hypothesis is supported—the choice is driven by the English language. Conversely, the hypothesis is falsified under two clear conditions:
+
+\begin{enumerate}
+    \item the model consistently selects Claim A in both pairs (showing that prior knowledge or factual accuracy drives the decision), or
+    \item the model favors the English claim for English queries but switches to the Korean claim for Korean queries (showing that query-language alignment outweighs English authority).
+\end{enumerate}
+
+\subsection{Experimental Controls}
+
+To prevent confounding factors, five controls are applied:
+
+\begin{enumerate}
+    \item \textit{Ordering bias} is addressed by shuffling which language appears first in the prompt.
+    \item \textit{Translation artifacts} are minimized by using uniform declarative sentence templates rather than unstructured web text.
+    \item \textit{Prior knowledge bias} is controlled by first testing the model without context (closed-book) in both languages, separating known facts from unknown facts.
+    \item \textit{Cultural entity bias} is avoided by selecting culturally neutral facts.
+    \item \textit{Query language alignment} is accounted for by testing every claim pair under both English and Korean queries.
+\end{enumerate}
