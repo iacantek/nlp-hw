@@ -1,35 +1,94 @@
-\section{Hypothesis}
-\label{sec:hypothesis}
+\section{Method}
+\label{sec:method}
 
-\subsection{Primary Hypothesis}
+To measure generator-level language preference under direct factual contradiction without confounding from parametric memory, passage position, or surface morphosyntax, we design a counterbalanced cross-lingual conflict protocol paired with dual discrete-and-probabilistic scoring.
 
-Multilingual LLMs exhibit a systematic language preference bias favoring English and the query language during retrieval, reranking, and citation \parencite{ki2025,wang2026}: when presented with directly conflicting factual claims in English and Korean, the model will systematically favor the claim written in English across both English and Korean queries, regardless of factual accuracy or prior knowledge.
+\subsection{Problem Formulation and Notation}
+\label{subsec:formulation}
 
-\subsection{Justification and Literature Support}
-
-This hypothesis is motivated by the predominance of English in pre-training data \parencite{li2025}, where models exhibit lower entropy and higher prediction confidence for English text \parencite{ki2025}. Recent studies demonstrate that multilingual RAG (mRAG) systems preferentially cite English documents \parencite{ki2025} and that English acts as a \enquote{semantic attractor} \parencite{li2025} during multilingual generation and reasoning. Furthermore, language preference can lead models to cite irrelevant English documents over relevant non-English sources, which risks marginalizing non-English sources and reinforcing language hierarchies \parencite{ki2025}.
-
-However, it remains unclear whether models actually trust English facts more when sources directly contradict each other. While unexamined citation biases may degrade system performance across languages \parencite{ki2025,park2025}, the claim that English misinformation could override accurate Korean facts is not directly proven by the literature. Finally, by pairing contradictory claims across English and Korean and swapping their languages, this study tests whether citation bias extends into actual factual trust.
-
-\subsection{Experimental Validation and Falsifiability}
-
-The hypothesis can be tested and falsified using a counterbalanced setup across both English and Korean queries. For each question, the model is evaluated on \texttt{[English: Claim A, Korean: Claim B]} and the language-swapped pair \texttt{[Korean: Claim A, English: Claim B]}.
-
-If the model selects Claim A in the first pair but switches to Claim B in the second pair under both English and Korean queries, the hypothesis is supported—the choice is driven by the English language. Conversely, the hypothesis is falsified under two clear conditions:
-
-\begin{enumerate}
-    \item the model consistently selects Claim A in both pairs (showing that prior knowledge or factual accuracy drives the decision), or
-    \item the model favors the English claim for English queries but switches to the Korean claim for Korean queries (showing that query-language alignment outweighs English authority).
+Let $\mathcal{D} = \{e_1, \dots, e_N\}$ denote a benchmark of $N{=}150$ culturally neutral factual items partitioned equally into three categories: named entities ($\textsc{Entity}$), calendar years ($\textsc{Date}$), and numeric quantities ($\textsc{Number}$). Each item $e_i$ consists of:
+\begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}\setlength{\topsep}{2pt}
+    \item Parallel queries $q_i(\text{en})$ in English and $q_i(\text{ko})$ in Korean asking for the same atomic fact.
+    \item A ground-truth concept $A_i = (a_{i,\text{en}}, a_{i,\text{ko}})$ and a plausible, type-matched counterfactual $B_i = (b_{i,\text{en}}, b_{i,\text{ko}})$. For $\textsc{Entity}$ items, $a_{i,\text{en}}, b_{i,\text{en}}$ use Latin script and $a_{i,\text{ko}}, b_{i,\text{ko}}$ use Hangul; for $\textsc{Date}$ and $\textsc{Number}$ items, both languages share identical Arabic numerals ($a_{i,\text{en}}{=}a_{i,\text{ko}}$ and $b_{i,\text{en}}{=}b_{i,\text{ko}}$).
+    \item Parallel declarative templates $T_{i,\text{en}}(\cdot)$ and $T_{i,\text{ko}}(\cdot)$ embedding any candidate $C \in \{A_i, B_i\}$ into an equivalent assertion $d_{\text{en}}(C) = T_{i,\text{en}}(c_{\text{en}})$ and $d_{\text{ko}}(C) = T_{i,\text{ko}}(c_{\text{ko}})$.
 \end{enumerate}
+Given a prompt $x$ containing query $q_i(\ell_q)$ in language $\ell_q \in \{\text{en}, \text{ko}\}$ and two ordered context documents $(D_1, D_2)$ asserting competing claims $A_i$ and $B_i$, the generator produces decision $y(x) \in \{A, B\}$.
 
-\subsection{Experimental Controls}
+\subsection{Counterbalanced Cross-Lingual Conflict Protocol}
+\label{subsec:protocol}
 
-To prevent confounding factors, five controls are applied:
+In a naive test where English always asserts $A_i$ and Korean always asserts $B_i$, choosing $A_i$ conflates English preference with closed-book recall of truth $A_i$. We eliminate this confound by evaluating every item $e_i$ under two counterbalanced assignments:
+\begin{equation}
+\footnotesize
+\text{Pair}_{i,1}\!:\! \{d_{\text{en}}(A_i), d_{\text{ko}}(B_i)\},\;
+\text{Pair}_{i,2}\!:\! \{d_{\text{ko}}(A_i), d_{\text{en}}(B_i)\}.
+\label{eq:pairs}
+\end{equation}
+To control for query-language alignment and position bias, we cross $\{\text{Pair}_{i,1}, \text{Pair}_{i,2}\}$ with query languages $\ell_q \in \{\text{en}, \text{ko}\}$ and passage orders $o \in \{\text{EN-first}, \text{KO-first}\}$ ($\text{EN-first}$ places $d_{\text{en}}$ at $D_1$, $d_{\text{ko}}$ at $D_2$; $\text{KO-first}$ reverses them). This $2 \times 2 \times 2$ design yields $8$ cross-lingual runs per item ($4$ matched pairs $\bigl(x_{i,1}(\ell_q, o), x_{i,2}(\ell_q, o)\bigr)$ holding $(\ell_q, o)$ fixed while swapping the languages of $A_i$ and $B_i$).
 
-\begin{enumerate}
-    \item \textit{Ordering bias} is addressed by shuffling which language appears first in the prompt.
-    \item \textit{Translation artifacts} are minimized by using uniform declarative sentence templates rather than unstructured web text.
-    \item \textit{Prior knowledge bias} is controlled by first testing the model without context (closed-book) in both languages, separating known facts from unknown facts.
-    \item \textit{Cultural entity bias} is avoided by selecting culturally neutral facts.
-    \item \textit{Query language alignment} is accounted for by testing every claim pair under both English and Korean queries.
-\end{enumerate}
+\subsection{Confounder Controls and Korean Morphosyntactic Resolution}
+\label{subsec:controls}
+
+Beyond claim swapping and order balancing, our protocol enforces three controls:
+
+\paragraph{1. Parallel Declarative Templates and Korean Particle Resolution.}
+Authentic web passages vary in length and style, affecting LLM trust \citep{wu2024not}. Our parallel templates $T_{i,\text{en}}$ and $T_{i,\text{ko}}$ equalize density to one declarative sentence per passage. In Korean, substituting $a_{i,\text{ko}}$ vs.\ $b_{i,\text{ko}}$ into a fixed template can produce ungrammatical postpositions (\emph{josa}, \ko{조사}) when one entity ends in a final consonant (\emph{batchim}, \ko{받침}) and the other in a vowel. To prevent grammaticality artifacts from biasing log-probabilities, we implement a deterministic Korean morphosyntactic resolver (\texttt{src/korean\_utils.py}). For any Hangul syllable $u \in [\text{U+AC00}, \text{U+D7A3}]$, the coda index is:
+\begin{equation}
+    j_{\text{jong}}(u) = (u - \text{0xAC00}) \bmod 28 \in \{0, \dots, 27\},
+    \label{eq:batchim}
+\end{equation}
+where $j_{\text{jong}}(u) > 0$ indicates a final consonant and $j_{\text{jong}}(u) = 8$ identifies liquid coda \ko{ㄹ} (\emph{rieul}). For Arabic numerals, we map the final significant digit (and unit power $10^k$) to its Sino-Korean coda: digits $1$ (\ko{일}, \emph{il}), $7$ (\ko{칠}, \emph{chil}), and $8$ (\ko{팔}, \emph{pal}) carry coda \ko{ㄹ} ($j_{\text{jong}}{=}8$); digits $0$ (\ko{영}, \emph{yeong}), $3$ (\ko{삼}, \emph{sam}), and $6$ (\ko{육}, \emph{yuk}) carry non-\ko{ㄹ} codas; and digits $2$ (\ko{이}, \emph{i}), $4$ (\ko{사}, \emph{sa}), $5$ (\ko{오}, \emph{o}), and $9$ (\ko{구}, \emph{gu}) are vowel-final ($j_{\text{jong}}{=}0$). Allomorphic placeholders in $T_{i,\text{ko}}$---\texttt{\{\ko{은/는}\}} (\emph{eun/neun}), \texttt{\{\ko{이/가}\}} (\emph{i/ga}), \texttt{\{\ko{을/를}\}} (\emph{eul/reul}), \texttt{\{\ko{과/와}\}} (\emph{gwa/wa}), \texttt{\{\ko{으로/로}\}} (\emph{euro/ro}, selecting \ko{로} after vowels and \ko{ㄹ}), and \texttt{\{\ko{이라고/라고}\}} (\emph{irago/rago})---resolve automatically upon insertion.
+
+\paragraph{2. Closed-Book Parametric Prior Probing.}
+We query each model on $q_i(\text{en})$ and $q_i(\text{ko})$ without context ($2$ runs/item) to partition items into four strata: $\textsc{Known-Both}$, $\textsc{Known-EN-Only}$, $\textsc{Known-KO-Only}$, and $\textsc{Unknown-Both}$.
+
+\paragraph{3. Monolingual Translated-Context Conflict Baseline.}
+Following \citet{park2025} and \citet{ki2025}, we evaluate a monolingual baseline ($4$ runs/item) where \emph{both} contradicting passages share the query language ($\{d_{\text{en}}(A_i), d_{\text{en}}(B_i)\}$ for $\ell_q{=}\text{en}$; $\{d_{\text{ko}}(A_i), d_{\text{ko}}(B_i)\}$ for $\ell_q{=}\text{ko}$) across both orders ($A$-first, $B$-first).
+
+\subsection{Dual Scoring: Exact Extraction and Concept Log-Probabilities}
+\label{subsec:scoring}
+
+To avoid conflating comprehension with free-form generation bottlenecks \citep{qi2025} while still capturing surface script drift, we score every run $x$ using two complementary modalities:
+
+\paragraph{Discrete Text Extraction ($y_{\text{text}}$).}
+We decode up to 24 new tokens greedily ($\tau{=}0.0$). To avoid false numeric matches (e.g., matching claim ``1'' inside ``Document 1''), our extractor strips document headers (\texttt{Document 1/2}, \texttt{\ko{문서} 1/2}) and applies strict non-digit boundary regex \texttt{(?<!\textbackslash d)c(?!\textbackslash d)} for numerals and case-normalized matching for entities, labeling responses as $A$, $B$, or \texttt{abstain} (if both or neither claim appears).
+
+\paragraph{Concept-Level Log-Probabilities ($y_{\text{lp}}$).}
+In a single batched teacher-forced pass, we compute the length-normalized log-probability of each candidate surface string $s \in \{a_{i,\text{en}}, a_{i,\text{ko}}, b_{i,\text{en}}, b_{i,\text{ko}}\}$ tokenized as $s = (t_1, \dots, t_{|s|})$ following prompt $x$:
+\begin{equation}
+    \bar{\ell}(s \mid x) = \frac{1}{|s|} \sum_{k=1}^{|s|} \log P_\theta(t_k \mid x, t_{<k}).
+    \label{eq:len_norm_lp}
+\end{equation}
+We marginalize over both language realizations of concept $C = (c_{\text{en}}, c_{\text{ko}})$ via log-sum-exp, deduplicating when surface numerals are identical ($c_{\text{en}}{=}c_{\text{ko}}$):
+\begin{equation}
+    \ell_{\text{concept}}(C \mid x) =
+    \begin{cases}
+        \bar{\ell}(c_{\text{en}} \mid x) & \text{if } c_{\text{en}} = c_{\text{ko}}, \\
+        \log\bigl(e^{\bar{\ell}(c_{\text{en}} \mid x)} + e^{\bar{\ell}(c_{\text{ko}} \mid x)}\bigr) & \text{if } c_{\text{en}} \neq c_{\text{ko}}.
+    \end{cases}
+    \label{eq:concept_lp}
+\end{equation}
+The continuous margin toward truth $A_i$ is $\Delta\ell(x) = \ell_{\text{concept}}(A_i \mid x) - \ell_{\text{concept}}(B_i \mid x)$, yielding $y_{\text{lp}}(x) = A$ if $\Delta\ell(x) \ge 0$ and $B$ otherwise. Our primary combined decision $y(x)$ uses $y_{\text{text}}(x)$ when unambiguous ($A$ or $B$) and falls back to $y_{\text{lp}}(x)$ on hedged responses, while we also report $y_{\text{text}}$ and $y_{\text{lp}}$ separately.
+
+\subsection{Four-Regime Decomposition and Statistical Testing}
+\label{subsec:stats}
+
+For each matched counterbalanced pair $(x_{m,1}, x_{m,2})$ ($m \in \{1, \dots, M\}$, where $M{=}600$ total or $300$ per query language), $x_{m,1}$ represents $\text{Pair}_1$ ($[\text{EN}{=}A, \text{KO}{=}B]$) and $x_{m,2}$ represents $\text{Pair}_2$ ($[\text{KO}{=}A, \text{EN}{=}B]$) under identical $(\ell_q, o)$. The paired decision $\bigl(y(x_{m,1}), y(x_{m,2})\bigr) \in \{A, B\}^2$ falls into one of four behavioral regimes:
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}\setlength{\topsep}{2pt}
+    \item \textbf{English Flip ($A \to B$):} $y(x_{m,1}){=}A, y(x_{m,2}){=}B$ (follows the English document in both pairs).
+    \item \textbf{Korean Flip ($B \to A$):} $y(x_{m,1}){=}B, y(x_{m,2}){=}A$ (follows the Korean document in both pairs).
+    \item \textbf{Truth-Consistent ($A \to A$):} $y(x_{m,1}){=}A, y(x_{m,2}){=}A$ (retains true claim $A$ in both pairs).
+    \item \textbf{False-Consistent ($B \to B$):} $y(x_{m,1}){=}B, y(x_{m,2}){=}B$ (selects false claim $B$ in both pairs).
+\end{itemize}
+With regime counts $N_{A \to B} + N_{B \to A} + N_{A \to A} + N_{B \to B} = M$, the marginal \textbf{English Preference Rate ($\text{EPR}$)} across all $2M$ runs satisfies:
+\begin{align}
+    \text{EPR} &= \frac{N_{A \to B} + \frac{1}{2}(N_{A \to A} + N_{B \to B})}{M}, \nonumber\\
+    \text{EPR} - 0.50 &= \frac{N_{A \to B} - N_{B \to A}}{2M}.
+    \label{eq:epr_identity}
+\end{align}
+Because $N_{A \to A}$ and $N_{B \to B}$ cancel out of $\text{EPR} - 0.50$, testing language neutrality ($H_0: \text{EPR} = 0.50$) while factoring out parametric truth consistency reduces to \textbf{McNemar's test} on discordant flips $(N_{A \to B}, N_{B \to A})$:
+\begin{equation}
+    \chi^2_{\text{McNemar}} = \frac{\bigl(|N_{A \to B} - N_{B \to A}| - 1\bigr)^2}{N_{A \to B} + N_{B \to A}},
+    \label{eq:mcnemar}
+\end{equation}
+paired with an exact binomial test on $N_{A \to B} \sim \text{Binomial}(N_{A \to B} + N_{B \to A}, 0.5)$. On the continuous scale, we test the paired \textbf{Log-Probability Shift} $\Delta\ell_m = \Delta\ell(x_{m,1}) - \Delta\ell(x_{m,2})$ via a paired $t$-test and Wilcoxon signed-rank test, alongside the \textbf{$\text{Pair}_2$ Truth Override Rate ($\text{TOR}$)} and \textbf{Language Consistency ($\text{LC}$)}.
