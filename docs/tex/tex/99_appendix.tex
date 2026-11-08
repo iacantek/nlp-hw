@@ -1,0 +1,149 @@
+\bibliography{custom}
+
+\clearpage
+\appendix
+
+\section{Revision Plan for Homework 3}
+\label{sec:appendix_revision}
+
+To guide the transition from this Homework~2 manuscript to the final Homework~3 submission, we critically audit our current draft across methodology, empirical scope, and analysis. Table~\ref{tab:revision_plan} details five specific weaknesses identified in our current draft, the exact sections and tables affected, our concrete action plan for Homework~3, and falsifiable completion criteria.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{1.8cm}p{3.4cm}p{5.5cm}p{4.3cm}@{}}
+\toprule
+\textbf{Affected Section} & \textbf{Identified Weakness in HW~2 Draft} & \textbf{Concrete Action Plan for Homework~3} & \textbf{Falsifiable Completion Criterion} \\
+\midrule
+\textbf{W1:} §\ref{subsec:implementation}, §\ref{subsec:main_results}, §\ref{sec:analysis} (Tables~\ref{tab:main_results}--\ref{tab:qualitative}) &
+\textbf{Simulated Baseline Numbers Pending Live GPU Execution:} While the complete inference and statistical evaluation suite is implemented and verified, the numerical tables in this draft are populated by the calibrated deterministic simulation mode prior to live GPU execution. &
+Execute the 4-bit quantized Hugging Face evaluation across all $4{,}200$ prompts on an NVIDIA T4 GPU for both \texttt{Qwen-2.5-7B-Instruct} and \texttt{Llama-3.1-8B-Instruct}, and synchronize all quantitative tables and qualitative examples with the empirical GPU outputs. &
+$100\%$ of the $4{,}200$ model evaluation records ($2{,}100$ per model) originate from live T4 GPU inference and are reflected across Tables~\ref{tab:main_results}--\ref{tab:qualitative}. \\
+\midrule
+\textbf{W2:} §\ref{subsec:rw_generator}, §\ref{subsec:protocol}, §\ref{sec:analysis} &
+\textbf{Absence of Conflict-Aware Mitigation Baselines:} The current draft diagnoses severe Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$--\llamaPairTwoOverrideAll\%) in $\text{Pair}_2$, but does not evaluate whether prompt-level or decoding-time interventions can reduce English authority bias. &
+Implement and evaluate two inference-time mitigation strategies: (1) \emph{Language-Neutral Verification Prompting} (instructing the model to cross-check claims independently of passage language) and (2) \emph{Prior-Anchored Logit Calibration} comparing closed-book vs.\ context-conditioned log-probabilities. &
+Add a dedicated mitigation subsection and results table in §\ref{sec:analysis} reporting $\Delta\text{EPR}$ and $\Delta\text{TOR}$ for both interventions across all $600$ counterbalanced pairs per model. \\
+\midrule
+\textbf{W3:} §\ref{subsec:protocol}, §\ref{subsec:dataset} &
+\textbf{Two-Document ($k{=}2$) Pairwise Contradiction Only:} Real-world mRAG pipelines typically retrieve $k \in \{3, 5\}$ passages where a single outdated English passage may conflict with a majority of two or more local-language Korean passages. &
+Extend the evaluation protocol with a \emph{Majority-Vote Conflict Ablation} ($k{=}3$: $1$ false English passage $d_{\text{en}}(B_i)$ vs.\ $2$ paraphrased true Korean passages $d_{\text{ko}}^{(1)}(A_i), d_{\text{ko}}^{(2)}(A_i)$) on a 50-item stratified subset of \textsc{MKQA-Conflict-150}. &
+Report exact Truth Override Rates comparing $1\text{ EN vs.\ }1\text{ KO}$ against $1\text{ EN vs.\ }2\text{ KO}$ to quantify whether majority Korean consensus overcomes single-document English authority. \\
+\midrule
+\textbf{W4:} §\ref{subsec:controls}, Table~\ref{tab:dataset_examples} &
+\textbf{Single-Sentence Template Brevity vs.\ Multi-Sentence Passages:} While single-sentence templates strictly eliminate length and rhetorical confounders, authentic Wikipedia passages embed factual claims inside multi-sentence paragraphs. &
+Construct an expanded multi-sentence context condition by adding two neutral, non-conflicting background sentences around $T_{i,\text{en}}$ and $T_{i,\text{ko}}$ and test whether passage length modulates $\text{EPR}$. &
+Report paired $\text{EPR}$ and McNemar $\chi^2$ differences between single-sentence and three-sentence passages in §\ref{sec:analysis}. \\
+\midrule
+\textbf{W5:} §\ref{subsec:dataset}, §\ref{subsec:ablation_category} &
+\textbf{Sino-Korean vs.\ Arabic Numeral Realization in Korean:} In \textsc{MKQA-Conflict-150}, $\textsc{Date}$ and $\textsc{Number}$ items use Arabic numerals in both languages, leaving untested how models behave when numbers are spelled out in Hangul (e.g., \ko{사}, \emph{sa} vs.\ \texttt{4}). &
+Add a spelled-out Hangul numeral sub-experiment on the 50 $\textsc{Number}$ items comparing Arabic digits against Hangul numeral strings. &
+Quantify the exact $\Delta\text{EPR}$ between Arabic-numeral Korean passages and Hangul-spelled Korean passages on the $\textsc{Number}$ category. \\
+\bottomrule
+\end{tabular}%
+}
+\vspace{-3pt}
+\caption{Structured Revision Plan for Homework~3 detailing five specific weaknesses in the current draft, affected sections, actionable experimental extensions, and falsifiable completion criteria.}
+\label{tab:revision_plan}
+\vspace{-4pt}
+\end{table*}
+
+\section{AI Usage Disclosure}
+\label{sec:appendix_ai}
+
+In accordance with the course policy on transparent scientific reporting, we document all uses of generative AI tools across Homework~1 and Homework~2, distinguishing automated assistance from manual author verification:
+\begin{itemize}
+    \item \textbf{Literature Exploration and Related Work Synthesis (\texttt{NotebookLM}, \texttt{Gemini}):} During Homework~1 and Homework~2, \texttt{NotebookLM} and \texttt{Gemini} were used to summarize the five core reference papers \citep{ki2025,li2025,park2025,qi2025,wang2026} and extract candidate secondary citations from their bibliographies. \emph{Author Verification:} Every citation key, venue, page range, and quantitative claim in §\ref{sec:related_work} and the bibliography was cross-checked directly against the original published PDFs. No unverified or fabricated citations are included.
+    \item \textbf{Benchmark Construction and Korean Morphosyntax (\texttt{Antigravity}):} We used the \texttt{Antigravity} coding assistant to implement the deterministic filtering pipeline that extracts 150 aligned English--Korean QA pairs from the official Apple MKQA release \citep{longpre2021mkqa} and resolves Unicode Hangul codas (\emph{batchim}) and Sino-Korean numeral postpositions. \emph{Author Verification:} We verified $100\%$ of the MKQA example identifiers and parallel queries against the official MKQA release and validated all particle resolutions and extraction rules across $1{,}800$ automated unit-test assertions.
+    \item \textbf{Experimental Pipeline and Manuscript Drafting (\texttt{Antigravity}):} \texttt{Antigravity} assisted in implementing the dual exact-extraction and teacher-forced concept log-probability evaluation suite, the Google Colab execution notebook, and the LaTeX tables and TikZ figures. \emph{Author Verification:} The author reviewed all mathematical derivations (Equations~\ref{eq:pairs}--\ref{eq:mcnemar}), audited the randomly sampled qualitative examples ($\text{seed}{=}42$), and verified the Revision Plan.
+\end{itemize}
+
+\section{Reproducibility, Hyperparameters, and Prompt Templates}
+\label{sec:appendix_reproducibility}
+
+\subsection{Codebase and Execution Commands}
+\label{subsec:repro_commands}
+
+The complete source code, dataset (\texttt{src/data/mkqa\_conflict\_150.json}), unit test suite (\texttt{src/tests/test\_pipeline.py}), and Google Colab notebook (\texttt{src/colab\_runner.ipynb}) are publicly available at \url{https://github.com/iacantek/nlp-hw}. Table~\ref{tab:hyperparams} lists all experimental hyperparameters and software versions. Every result table and inline macro can be reproduced end-to-end via:
+\begin{enumerate}
+    \item \textbf{Run 16 Unit Test Suites (1,800+ Assertions):} \texttt{pytest -v}
+    \item \textbf{Run Evaluation on Google Colab T4 GPU (or Local Simulation):}
+    {\scriptsize
+\begin{verbatim}
+# Google Colab T4 GPU (Hugging Face 4-bit NF4):
+python -m src.run_experiment --backend hf \
+  --models qwen llama --quantization 4bit \
+  --seed 42 --resume --export-latex
+# Fast CPU Validation / Simulation Backend:
+python -m src.run_experiment --backend simulate \
+  --models qwen llama --seed 42 --export-latex
+\end{verbatim}
+    }
+    \item \textbf{Synchronize LaTeX Macros from Saved JSON Results:}
+    {\scriptsize
+\begin{verbatim}
+python -m src.export_tex \
+  --results results/experiment_results.json \
+  --output docs/tex/tex/00_results_macros.tex
+\end{verbatim}
+    }
+\end{enumerate}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.94}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}p{2.5cm}p{4.8cm}@{}}
+\toprule
+\textbf{Parameter / Component} & \textbf{Specification} \\
+\midrule
+Repository URL & \url{https://github.com/iacantek/nlp-hw} \\
+Benchmark Dataset & \textsc{MKQA-Conflict-150} ($150$ items; $50$ per cat.) \\
+Runs per Item / Total & $14$ runs/item $\implies 2{,}100$ runs/model ($4{,}200$ total) \\
+Counterbalanced Pairs & $M = 600$ pairs/model ($300$ EN, $300$ KO query) \\
+Models Evaluated & \texttt{Qwen/Qwen2.5-7B-Instruct} (7.6B); \texttt{meta-llama/Llama-3.1-8B-Instruct} (8.0B) \\
+Target GPU Hardware & Google Colab NVIDIA T4 (16 GB GDDR6 VRAM) \\
+Quantization Config & 4-bit NF4 (\texttt{bitsandbytes}), double quant, FP16 \\
+Decoding Config & Greedy ($\tau = 0.0$, \texttt{do\_sample=False}), \texttt{max\_new\_tokens=24} \\
+Candidate Scoring & Batched teacher-forced length-normalized $\ell_{\text{concept}}$ \\
+Random Seed & \texttt{seed = 42} (dataset, simulation, qualitative sample) \\
+Python Dependencies & \texttt{torch>=2.1}, \texttt{transformers>=4.43}, \texttt{bitsandbytes>=0.43}, \texttt{scipy} \\
+\bottomrule
+\end{tabular}%
+}
+\vspace{-3pt}
+\caption{Summary of experimental hyperparameters, hardware specifications, and reproducibility settings.}
+\label{tab:hyperparams}
+\vspace{-4pt}
+\end{table}
+
+\subsection{Verbatim Prompt Templates}
+\label{subsec:prompt_templates}
+
+We use parallel concise-answer system and user prompts accompanied below by Revised Romanization transliterations and English glosses:
+
+\paragraph{1. Cross-Lingual \& Monolingual Conflict Prompt ($\ell_q = \text{en}$):}
+\begin{quote}
+\scriptsize\ttfamily
+\textbf{[System]} You are a precise multilingual question-answering assistant. Read the provided documents carefully and answer the question using ONLY the concise entity, date, or number. Do not include explanations or punctuation.\\[2pt]
+\textbf{[User]} Document 1: \{doc1\} \quad Document 2: \{doc2\}\\
+Question: \{query\_en\}\\
+Answer (concise entity, date, or number only):
+\end{quote}
+
+\paragraph{2. Cross-Lingual \& Monolingual Conflict Prompt ($\ell_q = \text{ko}$):}
+\begin{quote}
+\scriptsize\ttfamily
+\textbf{[System]} \ko{당신은 정확한 다국어 질의응답 도우미입니다. 제공된 문서를 주의 깊게 읽고, 설명이나 문장 부호 없이 핵심 개체명, 연도 또는 숫자만으로 간결하게 질문에 답하세요.}\\
+\normalfont\scriptsize\emph{(Dangsin-eun jeonghwakhan dagugeo jirui-eungdap doumi-imnida. Jegongdoen munseo-reul juui gipge ikgo, seolmyeong-ina munjang buho eopsi haeksim gaechemyeong, yeondo ttoneun sutja-man-euro gangyeolhage jilmun-e daphaseyo. / ``You are an accurate multilingual QA assistant. Read the provided documents carefully and answer concisely with only the core entity, year, or number.'')}\\[2pt]
+\ttfamily
+\textbf{[User]} \ko{문서} 1: \{doc1\} \quad \ko{문서} 2: \{doc2\}\\
+\ko{질문}: \{query\_ko\} \quad \ko{정답 (핵심 개체명, 연도 또는 숫자만 답하세요)}:\\
+\normalfont\scriptsize\emph{(Munseo 1/2; Jilmun; Jeongdap: ``Document 1/2; Question; Answer:'')}
+\end{quote}
+
+\paragraph{3. Closed-Book Parametric Prior Prompt ($\ell_q \in \{\text{en}, \text{ko}\}$):}
+Omits \texttt{Document 1} and \texttt{Document 2} and instructs the model to answer directly from parametric knowledge in the query language using only the concise entity, date, or number.

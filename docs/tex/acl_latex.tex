@@ -10,39 +10,37 @@
 
 % For proper rendering and hyphenation of words containing Latin characters (including in bib files)
 \usepackage[T1]{fontenc}
-% For Vietnamese characters
-% \usepackage[T5]{fontenc}
-% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
 
 % This assumes your files are encoded as UTF8
 \usepackage[utf8]{inputenc}
 
-% This is not strictly necessary, and may be commented out,
-% but it will improve the layout of the manuscript,
-% and will typically save some space.
+% Improves layout and saves space
 \usepackage{microtype}
 
-% This is also not strictly necessary, and may be commented out.
-% However, it will improve the aesthetics of text in
-% the typewriter font.
+% Improves aesthetics of typewriter font
 \usepackage{inconsolata}
 
-%Including images in your LaTeX document requires adding
-%additional package(s)
+% Additional packages for math, tables, graphics, and Korean Hangul rendering
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
 \usepackage{graphicx}
+\usepackage{CJKutf8}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
 
-% Bibliography management
-\usepackage[style=authoryear]{biblatex}
-\addbibresource{custom.bib}
+% Korean Hangul helper macro (renders UTF-8 Hangul via TeX Live CJKutf8 'mj' font)
+\newcommand{\ko}[1]{\begin{CJK}{UTF8}{mj}#1\end{CJK}}
 
 % Quotes
 \usepackage{csquotes}
 
-% If the title and author information does not fit in the area allocated, uncomment the following
-%
-%\setlength\titlebox{<dim>}
-%
-% and set <dim> to something 5cm or larger.
+% Auto-generated experimental results macros
+\input{tex/00_results_macros}
 
 \title{Language Bias in Conflicting Multilingual RAG Evidence}
 
@@ -54,16 +52,19 @@
 \begin{document}
 \maketitle
 
-% TODO: uncomment as soon as needed
-% \input{tex/00_abstract}
+\input{tex/00_abstract}
 
 \input{tex/01_research_idea}
 
-\input{tex/02_hypothesis}
-
 \input{tex/03_paper_survey}
 
+\input{tex/02_hypothesis}
+
 \input{tex/04_environment}
+
+\input{tex/05_analysis}
+
+\input{tex/06_conclusion}
 
 \input{tex/99_appendix}
 

@@ -1,0 +1,22 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Language Bias in Retrieval and Reranking}
+\label{subsec:rw_retrieval}
+
+Cross-lingual open-retrieval QA links non-English queries to multilingual collections \citep{asai2021xor,asai2021one,asai2022mia,zhang2023miracl}, yet retrieval fairness across languages remains uneven \citep{yang2024language,amiraz2025crosslingual}. \citet{park2025} measured language preference across mRAG retrieval and generation via Mean Language Rank Shift (MLRS) on MKQA \citep{longpre2021mkqa} and BordIRLines \citep{li2024bordirlines}, showing that dense retrievers favor same-language and Latin-script passages while generator outputs align in LaBSE embedding space with high-resource contexts. However, \citet{park2025} evaluated generators only over fixed top-$k$ mixtures or uniform single-language translations, never pitting two languages against each other on mutually exclusive claims. Recently, \citet{wang2026} showed that neural rerankers filter out lower-resource passages, leaving a 12--18 point recall gap below an oracle reranker on Korean MKQA queries. Their distilled reranker, LAURA, improved 10 of 13 languages, yet Korean was the only language where LAURA failed to improve accuracy ($25.0\%$ vs.\ $24.8\%, p{=}0.498$). Our work complements \citet{park2025} and \citet{wang2026} by isolating what happens \emph{inside the generator} when conflicting English and Korean passages both reach the context window.
+
+\subsection{Generator Utilization and Linguistic Nepotism}
+\label{subsec:rw_generator}
+
+Studies of multilingual context utilization \citep{chirkova2024retrieval,wu2024not,liu2025xrag} show substantial cross-lingual performance gaps. \citet{qi2025} introduced \textsc{GMMLU-Choice} across 15 languages, showing via option log-likelihoods that LLMs comprehend non-English gold passages nearly as well as English passages when free-form generation bottlenecks are removed. Yet their non-gold passages were topically related distractors that \emph{contained no competing answer}. Closest to our study, \citet{ki2025} coined \emph{linguistic nepotism} to describe a generator's preference for citing documents in the query language. Using parallel passages from GlobalVoices and relevant-versus-irrelevant pairs on MIRACL \citep{zhang2023miracl}, \citet{ki2025} found that English queries cite English passages $66\%$--$98\%$ of the time while non-English queries preferentially cite query-language passages. However, \citet{ki2025} evaluated \emph{in-line citation indices} (\texttt{[1]}--\texttt{[9]}) over parallel translations, complementary facts, or irrelevant distractors rather than conflicting claims. Our counterbalanced protocol tests whether query-language nepotism ($\mathcal{H}_{\text{QL}}$) or English authority ($\mathcal{H}_{\text{EN}}$) prevails under direct factual contradiction.
+
+\subsection{Latent English Dominance and Language Drift}
+\label{subsec:rw_drift}
+
+Multilingual transformers process non-English inputs through intermediate representations anchored to English \citep{wendler2024llamas}, often causing \emph{language drift} into the retrieved passage's language during decoding \citep{chirkova2024retrieval,wu2024not}. \citet{li2025} distinguished reasoning-initialization drift from entity-Continuum drift triggered after generating cross-lingual named entities. Extending \citet{li2025}, we test whether latent English dominance also drives generators to trust English factual claims over Korean claims, and whether Latin-versus-Hangul script divergence amplifies this bias relative to shared Arabic numerals.
+
+\subsection{Cross-Lingual Factual Consistency and Conflicts}
+\label{subsec:rw_consistency}
+
+Multilingual LMs frequently return inconsistent closed-book answers across languages \citep{fierro2022factual,qi2023crosslingual,wang2025lost}, creating cross-lingual hallucination gaps \citep{sharma2025faux,chataigner2025multilingual}. In geopolitically disputed domains such as BordIRLines \citep{li2024bordirlines,li2025culturally}, Wikipedia editions naturally conflict, motivating dialectic prompting \citep{ranaldi2025improving}. Because cultural disputes entangle language bias with cultural priors, we restrict \textsc{MKQA-Conflict-150} to culturally neutral facts and counterbalance language--claim assignments.
