@@ -21,7 +21,7 @@ from src.korean_utils import (
 )
 from src.models import SimulatedModelBackend, resolve_model_id
 from src.prompts import build_all_prompts, build_prompts_for_example
-from src.run_experiment import run_experiment_pipeline
+from src.run_experiment import load_checkpoint, run_experiment_pipeline
 from src.scoring import (
     compute_concept_logprob,
     extract_claim_from_generation,
@@ -305,6 +305,9 @@ class TestStatisticalProperties:
                 "cross_lingual_by_query_lang"
             ]["all"]["combined"]["epr"]
             assert abs(epr1 - epr2) < 1e-12
+            ckpt_file = Path(tmpdir) / "runs_Qwen__Qwen2.5-7B-Instruct.jsonl"
+            assert len(load_checkpoint(ckpt_file, expected_backend="simulate")) > 0
+            assert len(load_checkpoint(ckpt_file, expected_backend="hf")) == 0
             macros_tex = generate_latex_macros(summary1)
             assert "\\newcommand{\\qwenEPRAll}" in macros_tex
 
