@@ -47,7 +47,7 @@ $B$: \texttt{3} / \texttt{3} (Shared Arabic numerals) &
 \vspace{-6pt}
 \end{table*}
 
-From this pool, we deterministically select $N{=}150$ items balanced across three categories ($50~\textsc{Entity}$, $50~\textsc{Date}$, $50~\textsc{Number}$; Table~\ref{tab:dataset_examples}). While $\textsc{Entity}$ items contrast Latin script against Hangul, $\textsc{Date}$ and $\textsc{Number}$ items use identical Arabic numerals in both languages, separating context-sentence language bias from answer-token script preference. Each item pairs ground-truth $A_i$ with a plausible, type-matched counterfactual $B_i$, verified via unit tests (\texttt{src/tests/test\_pipeline.py}) to ensure $100\%$ extraction precision across all 600 surface strings.
+From this pool, we deterministically select $N{=}150$ items balanced across three categories ($50~\textsc{Entity}$, $50~\textsc{Date}$, $50~\textsc{Number}$; Table~\ref{tab:dataset_examples}). While $\textsc{Entity}$ items contrast Latin script against Hangul, $\textsc{Date}$ and $\textsc{Number}$ items use identical Arabic numerals in both languages, separating context-sentence language bias from answer-token script preference. Each item pairs ground-truth $A_i$ with a plausible, type-matched counterfactual $B_i$, verified via automated boundary checks to ensure $100\%$ extraction precision across all 600 surface strings.
 
 \subsection{Models and Baselines}
 \label{subsec:models_baselines}
@@ -57,7 +57,7 @@ We evaluate two open-weight instruction-tuned multilingual LLMs of comparable 7B
 \subsection{Implementation Details}
 \label{subsec:implementation}
 
-Each model runs on $14$ prompts per item ($2$ closed-book + $4$ monolingual + $8$ cross-lingual), totaling $2{,}100$ runs per model ($4{,}200$ overall) and $M{=}600$ counterbalanced pairs per model ($300$ per query language). For Google Colab NVIDIA T4 GPU (16 GB VRAM) compatibility, models use 4-bit NormalFloat (\texttt{nf4}) quantization with double quantization and FP16 compute via \texttt{bitsandbytes}, greedy decoding ($\tau{=}0.0$, \texttt{max\_new\_tokens=24}), and batched teacher-forced scoring over $\{a_{i,\text{en}}, a_{i,\text{ko}}, b_{i,\text{en}}, b_{i,\text{ko}}\}$. Our pipeline (\texttt{src/run\_experiment.py}) also includes a calibrated deterministic simulation backend (\texttt{--backend simulate}, \texttt{seed=42}) used to validate the statistical framework and populate the baseline numbers in this draft; all tables are wired to \texttt{docs/tex/tex/00\_results\_macros.tex} for one-command updates from Colab GPU logs.
+Each model runs on $14$ prompts per item ($2$ closed-book + $4$ monolingual + $8$ cross-lingual), totaling $2{,}100$ runs per model ($4{,}200$ overall) and $M{=}600$ counterbalanced pairs per model ($300$ per query language). For single-GPU reproducibility (NVIDIA T4, 16 GB VRAM), models use 4-bit NormalFloat (\textsc{nf4}) quantization with double quantization and FP16 compute, greedy decoding ($\tau{=}0.0$, up to $24$ new tokens), and batched teacher-forced scoring over $\{a_{i,\text{en}}, a_{i,\text{ko}}, b_{i,\text{en}}, b_{i,\text{ko}}\}$.\footnote{Code and data: \url{https://github.com/iacantek/nlp-hw}.} To validate the statistical framework prior to full GPU execution, our evaluation suite also provides a calibrated deterministic simulation mode ($\text{seed}{=}42$) that populates the baseline numbers in this draft and updates automatically from GPU evaluation logs.
 
 \begin{table*}[t]
 \centering

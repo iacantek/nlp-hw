@@ -32,7 +32,7 @@ To control for query-language alignment and position bias, we cross $\{\text{Pai
 Beyond claim swapping and order balancing, our protocol enforces three controls:
 
 \paragraph{1. Parallel Declarative Templates and Korean Particle Resolution.}
-Authentic web passages vary in length and style, affecting LLM trust \citep{wu2024not}. Our parallel templates $T_{i,\text{en}}$ and $T_{i,\text{ko}}$ equalize density to one declarative sentence per passage. In Korean, substituting $a_{i,\text{ko}}$ vs.\ $b_{i,\text{ko}}$ into a fixed template can produce ungrammatical postpositions (\emph{josa}, \ko{조사}) when one entity ends in a final consonant (\emph{batchim}, \ko{받침}) and the other in a vowel. To prevent grammaticality artifacts from biasing log-probabilities, we implement a deterministic Korean morphosyntactic resolver (\texttt{src/korean\_utils.py}). For any Hangul syllable $u \in [\text{U+AC00}, \text{U+D7A3}]$, the coda index is:
+Authentic web passages vary in length and style, affecting LLM trust \citep{wu2024not}. Our parallel templates $T_{i,\text{en}}$ and $T_{i,\text{ko}}$ equalize density to one declarative sentence per passage. In Korean, substituting $a_{i,\text{ko}}$ vs.\ $b_{i,\text{ko}}$ into a fixed template can produce ungrammatical postpositions (\emph{josa}, \ko{조사}) when one entity ends in a final consonant (\emph{batchim}, \ko{받침}) and the other in a vowel. To prevent grammaticality artifacts from biasing log-probabilities, we apply a deterministic Korean morphosyntactic resolver. For any Hangul syllable $u \in [\text{U+AC00}, \text{U+D7A3}]$, the coda index is:
 \begin{equation}
     j_{\text{jong}}(u) = (u - \text{0xAC00}) \bmod 28 \in \{0, \dots, 27\},
     \label{eq:batchim}

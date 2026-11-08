@@ -169,7 +169,7 @@ $\text{P}_2$: \texttt{Melbourne} ($B, -0.41$)\newline
 \end{tabular}%
 }
 \vspace{-4pt}
-\caption{Qualitative analysis of randomly sampled counterbalanced pairs (\texttt{seed=42}, sampled without cherry-picking in \texttt{results/experiment\_results.json}). Parentheses show the concept log-probability margin $\Delta\ell(x) = \ell_{\text{concept}}(A) - \ell_{\text{concept}}(B)$ in nats ($>0$ favors true claim $A$; $<0$ favors counterfactual $B$).}
+\caption{Qualitative analysis of randomly sampled counterbalanced pairs ($\text{seed}{=}42$, drawn without cherry-picking). Parentheses show the concept log-probability margin $\Delta\ell(x) = \ell_{\text{concept}}(A) - \ell_{\text{concept}}(B)$ in nats ($>0$ favors true claim $A$; $<0$ favors counterfactual $B$).}
 \label{tab:qualitative}
 \vspace{-6pt}
 \end{table*}
@@ -183,7 +183,7 @@ The tight concordance between $y_{\text{text}}$ and $y_{\text{lp}}$ confirms tha
 \subsection{Qualitative Analysis of Randomly Sampled Examples}
 \label{subsec:qualitative}
 
-To inspect instance-level behavior without cherry-picking, our pipeline draws a fixed pseudo-random sample of counterbalanced pairs (\texttt{seed=42}). Table~\ref{tab:qualitative} highlights four cases from this sample:
+To inspect instance-level behavior without cherry-picking, our evaluation draws a fixed pseudo-random sample of counterbalanced pairs ($\text{seed}{=}42$). Table~\ref{tab:qualitative} highlights four cases from this sample:
 \begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\topsep}{1pt}
     \item \textbf{Truth Override \& Script Drift (ID~28):} On the Korean query asking what language is spoken in Amsterdam, \texttt{Qwen-2.5-7B} outputs \ko{네덜란드어} (\emph{nedeollandeu-eo}, Dutch) in $\text{Pair}_1$ ($\Delta\ell{=}{+}0.31$). When $\text{Pair}_2$ assigns ``Flemish'' to English and ``\ko{네덜란드어}'' to Korean, Qwen flips to false claim $B$ ($\Delta\ell{=}{-}1.40$, $A \to B$) and drifts into Latin (\texttt{Flemish}).
     \item \textbf{Log-Probability Erosion Under Truth Retention (ID~6):} On the melting-point query, Qwen retains \texttt{carbon} in both pairs ($A \to A$) while Llama flips to \texttt{tungsten} in $\text{Pair}_2$ ($A \to B$). Even for Qwen, moving ``carbon'' from English to Korean erodes its margin from $+0.80$ to $+0.08$ nats ($\Delta\ell_m{=}{+}0.72$), revealing continuous confidence loss beneath the discrete threshold.
