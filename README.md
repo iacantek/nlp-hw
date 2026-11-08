@@ -38,13 +38,24 @@ nlp-hw/
   - Python `3.10+`
   - PyTorch (`torch >= 2.1.0`)
   - Hugging Face (`transformers >= 4.44.0`, `accelerate >= 0.33.0`, `bitsandbytes >= 0.43.0`)
-  - Scientific computing & testing (`scipy >= 1.11.0`, `numpy >= 1.24.0`, `pytest >= 8.0.0`)
+  - Scientific computing & testing (`scipy >= 1.11.0`, `numpy >= 1.24.0, < 2.5.0`, `pytest >= 8.0.0`)
 - **Models Evaluated:**
   - `Qwen/Qwen2.5-7B-Instruct`
-  - `meta-llama/Llama-3.1-8B-Instruct` (automatically falls back to the open weights mirror `unsloth/Meta-Llama-3.1-8B-Instruct` if `HF_TOKEN` is not set)
+  - `meta-llama/Llama-3.1-8B-Instruct` (automatically falls back to the open-weights mirror `unsloth/Meta-Llama-3.1-8B-Instruct` if `HF_TOKEN` is not set)
 - **Random Seed:** All dataset sampling, qualitative example selection, and evaluation runs use the fixed deterministic seed `--seed 42`.
 
-## Quickstart & Installation
+## Running on Google Colab (T4 GPU)
+
+The full GPU experiment is packaged in [`src/colab_runner.ipynb`](src/colab_runner.ipynb):
+
+1. **Open the Notebook:** Go to [Google Colab](https://colab.research.google.com/), select **File → Open notebook → GitHub**, enter `https://github.com/iacantek/nlp-hw` (branch `feat/hw-2`), and open `src/colab_runner.ipynb` (or upload `src/colab_runner.ipynb` directly).
+2. **Select the T4 GPU Runtime:** Click **Runtime → Change runtime type**, set **Hardware accelerator** to **T4 GPU**, and click **Save**.
+3. **Optional `HF_TOKEN` Setup:** To use the gated `meta-llama/Llama-3.1-8B-Instruct` repository, add `HF_TOKEN` under Colab **Secrets** (key icon in the left sidebar) and enable notebook access. If omitted, the runner automatically uses the open mirror `unsloth/Meta-Llama-3.1-8B-Instruct`.
+4. **Execute All Cells:** Click **Runtime → Run all**. The notebook clones the repository into `nlp-hw/`, installs dependencies via `nlp-hw/requirements.txt`, runs the test suite, evaluates both models with incremental checkpointing in `nlp-hw/results/`, updates `nlp-hw/docs/tex/tex/00_results_macros.tex`, and downloads `results_bundle.zip`.
+
+## Local Quickstart & Updating the LaTeX Manuscript
+
+### 1. Local Installation & Verification
 
 ```bash
 git clone https://github.com/iacantek/nlp-hw.git
@@ -52,11 +63,7 @@ cd nlp-hw
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-### 1. Verify Dataset & Run Stress Tests
-
-```bash
 # Rebuild and validate the 150-item MKQA Cross-Lingual Conflict dataset
 python3 -m src.build_dataset
 
@@ -64,31 +71,9 @@ python3 -m src.build_dataset
 pytest -v
 ```
 
-### 2. Reproducing Main Tables & Ablations on Google Colab (T4 GPU)
+### 2. Updating the Paper from `results_bundle.zip`
 
-You can either open and run `src/colab_runner.ipynb` directly in Google Colab, or execute the following CLI commands to reproduce all tables in the paper (`Table 1`: Baselines & Main Cross-Lingual Conflict Results; `Table 2`: Pairwise Flip Regime Decomposition & McNemar's Tests; `Table 3`: Prior-Knowledge Stratification Ablation; `Table 4`: Entity Category & Document Order Ablations; `Table 5`: Qualitative Examples):
-
-```bash
-# Run full evaluation across Qwen-2.5-7B-Instruct and Llama-3.1-8B-Instruct
-# (2,100 prompts/model: 300 closed-book + 1,200 cross-lingual conflict + 600 monolingual baseline)
-python3 -m src.run_experiment \
-    --backend hf \
-    --models qwen llama \
-    --quantization 4bit \
-    --max-new-tokens 24 \
-    --seed 42 \
-    --output-dir results \
-    --resume \
-    --export-latex
-```
-
-- Incremental per-run checkpoints are written to `results/runs_Qwen__Qwen2.5-7B-Instruct.jsonl` and `results/runs_meta-llama__Llama-3.1-8B-Instruct.jsonl`.
-- Aggregated metrics and statistical tests are saved to `results/experiment_results.json`.
-- LaTeX macros for every table and inline statistic are automatically exported to `docs/tex/tex/00_results_macros.tex`.
-
-### 3. Updating the LaTeX Manuscript from `experiment_results.json`
-
-Once `results/experiment_results.json` is fetched from Google Colab:
+After downloading `results_bundle.zip` from Google Colab, extract `results/experiment_results.json` into the local repository and run:
 
 ```bash
 # Export concrete experiment numbers into docs/tex/tex/00_results_macros.tex
@@ -97,7 +82,7 @@ python3 -m src.export_tex --results results/experiment_results.json
 # Compile the ACL manuscript PDF
 cd docs/tex
 pdflatex -interaction=nonstopmode acl_latex.tex
-biber acl_latex
+bibtex acl_latex
 pdflatex -interaction=nonstopmode acl_latex.tex
 pdflatex -interaction=nonstopmode acl_latex.tex
 ```

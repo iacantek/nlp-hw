@@ -17,8 +17,12 @@ import argparse
 import json
 from pathlib import Path
 import random
+import sys
 import time
 from typing import Any
+
+# Ensure the repository root (`nlp-hw/`) is on sys.path when invoked as `python3 nlp-hw/src/run_experiment.py`
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.dataset import load_conflict_dataset
 from src.export_tex import DEFAULT_MACROS_PATH, export_macros_to_file
