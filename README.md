@@ -44,7 +44,7 @@ nlp-hw/
   - `meta-llama/Llama-3.1-8B-Instruct` (automatically falls back to the open weights mirror `unsloth/Meta-Llama-3.1-8B-Instruct` if `HF_TOKEN` is not set)
 - **Random Seed:** All dataset sampling, qualitative example selection, and evaluation runs use the fixed deterministic seed `--seed 42`.
 
-## Quickstart & Installation (Fresh Machine / Google Colab)
+## Quickstart & Installation
 
 ```bash
 git clone https://github.com/iacantek/nlp-hw.git
