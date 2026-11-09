@@ -423,8 +423,8 @@ class TestStatisticalProperties:
                 return o
 
             def generate(self, **kwargs: Any) -> DummyTensor:
-                inp = kwargs["input_ids"].data[0]
-                return DummyTensor([inp + [5, 6, 7]])
+                batch_inp = kwargs["input_ids"].data
+                return DummyTensor([row + [5, 6, 7] for row in batch_inp])
 
         backend = object.__new__(HuggingFaceModelBackend)
         backend.torch = DummyTorch()
@@ -433,8 +433,15 @@ class TestStatisticalProperties:
         backend.max_new_tokens = 8
 
         examples = load_conflict_dataset(limit_per_category=1)
-        prompt = build_all_prompts(examples, include_monolingual_baseline=False)[2]
-        result = backend.evaluate_prompt(prompt)
+        prompts = build_all_prompts(examples, include_monolingual_baseline=False)[:4]
+        result = backend.evaluate_prompt(prompts[2])
         assert result["combined_choice"] in ("A", "B")
         assert isinstance(result["logprob_margin_a_minus_b"], float)
+
+        batch_results = backend.evaluate_batch(prompts)
+        assert len(batch_results) == len(prompts)
+        for p, b_res in zip(prompts, batch_results):
+            s_res = backend.evaluate_prompt(p)
+            assert b_res["combined_choice"] == s_res["combined_choice"]
+            assert abs(b_res["logprob_margin_a_minus_b"] - s_res["logprob_margin_a_minus_b"]) < 1e-9
 

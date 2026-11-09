@@ -217,11 +217,14 @@ class HuggingFaceModelBackend:
         self,
         model_name: str,
         quantization: str = "4bit",
-        max_new_tokens: int = 24,
+        max_new_tokens: int = 12,
         device_map: str = "auto",
     ):
         import torch
+        import transformers
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+        transformers.logging.set_verbosity_error()
 
         self.torch = torch
         self.model_id = resolve_model_id(model_name)
@@ -255,8 +258,24 @@ class HuggingFaceModelBackend:
             load_kwargs["torch_dtype"] = torch.float32
 
         loaded_repo = self.model_id
+        if "meta-llama/Llama-3.1-8B-Instruct" in loaded_repo and not hf_token:
+            print(
+                f"[Info] HF_TOKEN not set for gated repo {loaded_repo}; "
+                f"loading open mirror {LLAMA_FALLBACK_REPO}..."
+            )
+            loaded_repo = LLAMA_FALLBACK_REPO
+
+        tokenizer_kwargs: dict[str, Any] = {
+            "trust_remote_code": True,
+            "clean_up_tokenization_spaces": False,
+        }
+        if hf_token:
+            tokenizer_kwargs["token"] = hf_token
+
         try:
-            self.tokenizer = AutoTokenizer.from_pretrained(loaded_repo, **load_kwargs)
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                loaded_repo, **tokenizer_kwargs
+            )
             self.model = AutoModelForCausalLM.from_pretrained(loaded_repo, **load_kwargs)
         except Exception as exc:
             if "meta-llama/Llama-3.1-8B-Instruct" in loaded_repo:
@@ -266,7 +285,7 @@ class HuggingFaceModelBackend:
                 )
                 loaded_repo = LLAMA_FALLBACK_REPO
                 self.tokenizer = AutoTokenizer.from_pretrained(
-                    loaded_repo, **load_kwargs
+                    loaded_repo, **tokenizer_kwargs
                 )
                 self.model = AutoModelForCausalLM.from_pretrained(
                     loaded_repo, **load_kwargs
@@ -276,6 +295,38 @@ class HuggingFaceModelBackend:
 
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        self.tokenizer.padding_side = "left"
+        self.tokenizer.clean_up_tokenization_spaces = False
+
+        stop_ids: list[int] = []
+        gen_cfg = getattr(self.model, "generation_config", None)
+        if gen_cfg is not None:
+            default_max_len = getattr(
+                getattr(self.model, "config", None), "max_length", 20
+            )
+            gen_cfg.max_length = default_max_len
+            gen_cfg.max_new_tokens = None
+            if gen_cfg.eos_token_id is not None:
+                if isinstance(gen_cfg.eos_token_id, int):
+                    stop_ids.append(int(gen_cfg.eos_token_id))
+                elif isinstance(gen_cfg.eos_token_id, (list, tuple)):
+                    stop_ids.extend(int(x) for x in gen_cfg.eos_token_id)
+
+        if self.tokenizer.eos_token_id is not None:
+            if isinstance(self.tokenizer.eos_token_id, int):
+                if int(self.tokenizer.eos_token_id) not in stop_ids:
+                    stop_ids.append(int(self.tokenizer.eos_token_id))
+            elif isinstance(self.tokenizer.eos_token_id, (list, tuple)):
+                for x in self.tokenizer.eos_token_id:
+                    if int(x) not in stop_ids:
+                        stop_ids.append(int(x))
+
+        for nl in ("\n", "\n\n"):
+            nl_ids = self.tokenizer.encode(nl, add_special_tokens=False)
+            if len(nl_ids) == 1 and int(nl_ids[0]) not in stop_ids:
+                stop_ids.append(int(nl_ids[0]))
+
+        self._stop_token_ids: list[int] | None = stop_ids if stop_ids else None
         self.model.eval()
 
     def _format_prompt_text(self, prompt: PromptInstance) -> str:
@@ -293,10 +344,30 @@ class HuggingFaceModelBackend:
                 pass
         return f"{prompt.system_prompt}\n\n{prompt.user_prompt}\n"
 
+    def _decode_tokens(self, token_ids: Any) -> str:
+        try:
+            return str(
+                self.tokenizer.decode(
+                    token_ids,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=False,
+                )
+            )
+        except TypeError:
+            return str(self.tokenizer.decode(token_ids, skip_special_tokens=True))
+
+    @staticmethod
+    def _extract_first_line(generated_text: str) -> str:
+        for line in generated_text.splitlines():
+            stripped = line.strip()
+            if stripped:
+                return stripped
+        return ""
+
     def _score_candidates(
         self, prompt_text: str, prompt_ids: list[int], candidates: list[str]
     ) -> dict[str, float]:
-        """Compute length-normalized teacher-forced log-probabilities in a single batched pass."""
+        """Compute length-normalized teacher-forced log-probabilities for a single prompt."""
         torch = self.torch
         unique_cands = list(dict.fromkeys(c.strip() for c in candidates if c.strip()))
         results: dict[str, float] = {}
@@ -337,9 +408,17 @@ class HuggingFaceModelBackend:
         mask_tensor = torch.tensor(batch_mask, dtype=torch.long, device=device)
 
         with torch.no_grad():
-            outputs = self.model(
-                input_ids=input_tensor, attention_mask=mask_tensor
-            )
+            if hasattr(self.model, "config"):
+                outputs = self.model(
+                    input_ids=input_tensor,
+                    attention_mask=mask_tensor,
+                    use_cache=False,
+                )
+            else:
+                outputs = self.model(
+                    input_ids=input_tensor,
+                    attention_mask=mask_tensor,
+                )
             logits = outputs.logits
 
         for b_idx, (cand, full_ids) in enumerate(zip(valid_cands, seqs)):
@@ -357,43 +436,154 @@ class HuggingFaceModelBackend:
 
         return results
 
-    def evaluate_prompt(self, prompt: PromptInstance) -> dict[str, Any]:
+    def _score_candidates_batch(
+        self,
+        prompts: list[PromptInstance],
+        prompt_texts: list[str],
+        prompt_ids_list: list[list[int]],
+        cand_chunk_size: int = 16,
+    ) -> list[dict[str, float]]:
+        """Compute length-normalized teacher-forced candidate log-probabilities across a batch of prompts."""
         torch = self.torch
-        prompt_text = self._format_prompt_text(prompt)
-        prompt_ids = self.tokenizer.encode(prompt_text, add_special_tokens=False)
-        device = next(self.model.parameters()).device
+        lp_maps: list[dict[str, float]] = [{} for _ in prompts]
+        if not prompts:
+            return lp_maps
 
-        input_tensor = torch.tensor([prompt_ids], dtype=torch.long, device=device)
-        attention_mask = torch.ones_like(input_tensor)
+        device = next(self.model.parameters()).device
+        pad_id = (
+            self.tokenizer.pad_token_id
+            if self.tokenizer.pad_token_id is not None
+            else 0
+        )
+
+        flat_items: list[tuple[int, str, int, list[int]]] = []
+        for p_idx, (prompt, prompt_text, prompt_ids) in enumerate(
+            zip(prompts, prompt_texts, prompt_ids_list)
+        ):
+            n_prefix = len(prompt_ids)
+            cands = [
+                prompt.claim_a_en,
+                prompt.claim_a_ko,
+                prompt.claim_b_en,
+                prompt.claim_b_ko,
+            ]
+            unique_cands = list(dict.fromkeys(c.strip() for c in cands if c.strip()))
+            for cand in unique_cands:
+                full_ids = self.tokenizer.encode(
+                    prompt_text + cand, add_special_tokens=False
+                )
+                if len(full_ids) <= n_prefix or full_ids[:n_prefix] != prompt_ids:
+                    cand_ids = self.tokenizer.encode(cand, add_special_tokens=False)
+                    full_ids = prompt_ids + cand_ids
+                if len(full_ids) > n_prefix:
+                    flat_items.append((p_idx, cand, n_prefix, full_ids))
+                else:
+                    lp_maps[p_idx][cand] = -20.0
+
+        for start in range(0, len(flat_items), cand_chunk_size):
+            chunk = flat_items[start : start + cand_chunk_size]
+            seqs = [item[3] for item in chunk]
+            max_len = max(len(s) for s in seqs)
+            batch_ids = [s + [pad_id] * (max_len - len(s)) for s in seqs]
+            batch_mask = [[1] * len(s) + [0] * (max_len - len(s)) for s in seqs]
+
+            input_tensor = torch.tensor(batch_ids, dtype=torch.long, device=device)
+            mask_tensor = torch.tensor(batch_mask, dtype=torch.long, device=device)
+
+            with torch.no_grad():
+                if hasattr(self.model, "config"):
+                    outputs = self.model(
+                        input_ids=input_tensor,
+                        attention_mask=mask_tensor,
+                        use_cache=False,
+                    )
+                else:
+                    outputs = self.model(
+                        input_ids=input_tensor,
+                        attention_mask=mask_tensor,
+                    )
+                logits = outputs.logits
+
+            for b_idx, (p_idx, cand, n_prefix, full_ids) in enumerate(chunk):
+                seq_len = len(full_ids)
+                step_logits = logits[b_idx, n_prefix - 1 : seq_len - 1, :].float()
+                log_probs = torch.log_softmax(step_logits, dim=-1)
+                target_ids = torch.tensor(
+                    full_ids[n_prefix:seq_len], dtype=torch.long, device=device
+                )
+                token_lps = log_probs.gather(
+                    dim=-1, index=target_ids.unsqueeze(-1)
+                ).squeeze(-1)
+                mean_lp = float(token_lps.mean().item())
+                lp_maps[p_idx][cand] = mean_lp if not math.isinf(mean_lp) else -20.0
+
+        return lp_maps
+
+    def evaluate_batch(self, prompts: list[PromptInstance]) -> list[dict[str, Any]]:
+        """Evaluate a batch of prompts in parallel (batched generation + batched candidate scoring)."""
+        if not prompts:
+            return []
+        torch = self.torch
+        device = next(self.model.parameters()).device
+        pad_id = (
+            self.tokenizer.pad_token_id
+            if self.tokenizer.pad_token_id is not None
+            else 0
+        )
+
+        prompt_texts = [self._format_prompt_text(p) for p in prompts]
+        prompt_ids_list = [
+            self.tokenizer.encode(txt, add_special_tokens=False)
+            for txt in prompt_texts
+        ]
+
+        max_prompt_len = max(len(ids) for ids in prompt_ids_list)
+        batch_input_ids = [
+            [pad_id] * (max_prompt_len - len(ids)) + ids for ids in prompt_ids_list
+        ]
+        batch_attn_mask = [
+            [0] * (max_prompt_len - len(ids)) + [1] * len(ids)
+            for ids in prompt_ids_list
+        ]
+
+        input_tensor = torch.tensor(batch_input_ids, dtype=torch.long, device=device)
+        attention_mask = torch.tensor(batch_attn_mask, dtype=torch.long, device=device)
+
+        gen_kwargs: dict[str, Any] = {
+            "input_ids": input_tensor,
+            "attention_mask": attention_mask,
+            "max_new_tokens": self.max_new_tokens,
+            "do_sample": False,
+            "pad_token_id": pad_id,
+        }
+        stop_ids = getattr(self, "_stop_token_ids", None)
+        if stop_ids:
+            gen_kwargs["eos_token_id"] = stop_ids
 
         with torch.no_grad():
-            gen_ids = self.model.generate(
-                input_ids=input_tensor,
-                attention_mask=attention_mask,
-                max_new_tokens=self.max_new_tokens,
-                do_sample=False,
-                pad_token_id=self.tokenizer.pad_token_id,
+            gen_ids = self.model.generate(**gen_kwargs)
+
+        first_lines: list[str] = []
+        for b_idx in range(len(prompts)):
+            new_tokens = gen_ids[b_idx, max_prompt_len:]
+            generated_text = self._decode_tokens(new_tokens).strip()
+            first_lines.append(self._extract_first_line(generated_text))
+
+        lp_maps = self._score_candidates_batch(prompts, prompt_texts, prompt_ids_list)
+
+        scored_batch: list[dict[str, Any]] = []
+        for prompt, first_line, lp_map in zip(prompts, first_lines, lp_maps):
+            scored_batch.append(
+                score_run_output(
+                    prompt_meta=prompt.to_dict(),
+                    generated_text=first_line,
+                    logprob_a_en=lp_map.get(prompt.claim_a_en.strip(), -20.0),
+                    logprob_a_ko=lp_map.get(prompt.claim_a_ko.strip(), -20.0),
+                    logprob_b_en=lp_map.get(prompt.claim_b_en.strip(), -20.0),
+                    logprob_b_ko=lp_map.get(prompt.claim_b_ko.strip(), -20.0),
+                )
             )
+        return scored_batch
 
-        new_tokens = gen_ids[0, len(prompt_ids) :]
-        generated_text = self.tokenizer.decode(
-            new_tokens, skip_special_tokens=True
-        ).strip()
-        first_line = generated_text.splitlines()[0].strip() if generated_text else ""
-
-        cands = [
-            prompt.claim_a_en,
-            prompt.claim_a_ko,
-            prompt.claim_b_en,
-            prompt.claim_b_ko,
-        ]
-        lp_map = self._score_candidates(prompt_text, prompt_ids, cands)
-
-        return score_run_output(
-            prompt_meta=prompt.to_dict(),
-            generated_text=first_line,
-            logprob_a_en=lp_map.get(prompt.claim_a_en.strip(), -20.0),
-            logprob_a_ko=lp_map.get(prompt.claim_a_ko.strip(), -20.0),
-            logprob_b_en=lp_map.get(prompt.claim_b_en.strip(), -20.0),
-            logprob_b_ko=lp_map.get(prompt.claim_b_ko.strip(), -20.0),
-        )
+    def evaluate_prompt(self, prompt: PromptInstance) -> dict[str, Any]:
+        return self.evaluate_batch([prompt])[0]

@@ -14,6 +14,7 @@ Usage for Fast Local Verification / Simulation:
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 from pathlib import Path
 import random
@@ -64,6 +65,18 @@ def append_checkpoint(checkpoint_path: Path, record: dict[str, Any]) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     with open(checkpoint_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def append_checkpoints(
+    checkpoint_path: Path, records: list[dict[str, Any]]
+) -> None:
+    """Append a batch of scored run records to the JSONL checkpoint file."""
+    if not records:
+        return
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(checkpoint_path, "a", encoding="utf-8") as f:
+        for rec in records:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
 def sample_qualitative_examples(
@@ -124,7 +137,8 @@ def run_for_model(
     prompts: list[PromptInstance],
     backend_type: str = "simulate",
     quantization: str = "4bit",
-    max_new_tokens: int = 24,
+    max_new_tokens: int = 12,
+    batch_size: int = 16,
     seed: int = 42,
     output_dir: Path = Path("results"),
     resume: bool = True,
@@ -142,37 +156,68 @@ def run_for_model(
     if checkpoint_path.exists() and (not resume or len(completed) == 0):
         checkpoint_path.unlink()
 
-    if backend_type == "simulate":
-        backend: Any = SimulatedModelBackend(model_name=model_id, seed=seed)
-    elif backend_type == "hf":
-        backend = HuggingFaceModelBackend(
-            model_name=model_id,
-            quantization=quantization,
-            max_new_tokens=max_new_tokens,
-        )
-    else:
-        raise ValueError(f"Unknown backend_type: {backend_type!r}")
-
-    scored_runs: list[dict[str, Any]] = []
-    t0 = time.time()
+    pending_prompts = [p for p in prompts if p.run_id not in completed]
     n_total = len(prompts)
 
-    for idx, prompt in enumerate(prompts, start=1):
-        if prompt.run_id in completed:
-            scored_runs.append(completed[prompt.run_id])
-            continue
-
-        rec = backend.evaluate_prompt(prompt)
-        rec["backend"] = backend_type
-        scored_runs.append(rec)
-        append_checkpoint(checkpoint_path, rec)
-
-        if idx % 100 == 0 or idx == n_total:
-            elapsed = time.time() - t0
-            print(
-                f"[{model_id}] Completed {idx}/{n_total} runs ({elapsed:.1f}s elapsed)"
+    if not pending_prompts:
+        print(
+            f"[{model_id}] All {n_total}/{n_total} runs already completed in checkpoint; skipping model load."
+        )
+    else:
+        if backend_type == "simulate":
+            backend: Any = SimulatedModelBackend(model_name=model_id, seed=seed)
+        elif backend_type == "hf":
+            backend = HuggingFaceModelBackend(
+                model_name=model_id,
+                quantization=quantization,
+                max_new_tokens=max_new_tokens,
             )
+        else:
+            raise ValueError(f"Unknown backend_type: {backend_type!r}")
 
+        t0 = time.time()
+        eff_batch_size = max(1, int(batch_size))
+        n_pending = len(pending_prompts)
+
+        try:
+            for start_idx in range(0, n_pending, eff_batch_size):
+                batch = pending_prompts[start_idx : start_idx + eff_batch_size]
+                if hasattr(backend, "evaluate_batch") and eff_batch_size > 1:
+                    batch_records = backend.evaluate_batch(batch)
+                else:
+                    batch_records = [backend.evaluate_prompt(p) for p in batch]
+
+                for prompt, rec in zip(batch, batch_records):
+                    rec["backend"] = backend_type
+                    completed[prompt.run_id] = rec
+                append_checkpoints(checkpoint_path, batch_records)
+
+                newly_done = start_idx + len(batch)
+                done_so_far = len(completed)
+                if (
+                    newly_done // 100 > (newly_done - len(batch)) // 100
+                    or done_so_far == n_total
+                ):
+                    elapsed = time.time() - t0
+                    rate = newly_done / max(elapsed, 1e-6)
+                    rem_sec = (n_pending - newly_done) / max(rate, 1e-6)
+                    print(
+                        f"[{model_id}] Completed {done_so_far}/{n_total} runs "
+                        f"({elapsed:.1f}s elapsed, ETA {rem_sec / 60.0:.1f}m)"
+                    )
+        finally:
+            del backend
+            gc.collect()
+            if backend_type == "hf":
+                try:
+                    import torch
+
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                except Exception:
+                    pass
+
+    scored_runs = [completed[p.run_id] for p in prompts]
     analysis = analyze_model_runs(scored_runs, model_name=model_id)
     analysis["sampled_examples"] = sample_qualitative_examples(
         scored_runs, seed=seed, k=8
@@ -219,7 +264,8 @@ def run_experiment_pipeline(
     models: list[str],
     backend: str = "simulate",
     quantization: str = "4bit",
-    max_new_tokens: int = 24,
+    max_new_tokens: int = 12,
+    batch_size: int = 16,
     seed: int = 42,
     limit_per_category: int | None = None,
     include_monolingual_baseline: bool = True,
@@ -257,6 +303,7 @@ def run_experiment_pipeline(
             backend_type=backend,
             quantization=quantization,
             max_new_tokens=max_new_tokens,
+            batch_size=batch_size,
             seed=seed,
             output_dir=out_dir,
             resume=resume,
@@ -301,8 +348,14 @@ def main() -> None:
     parser.add_argument(
         "--max-new-tokens",
         type=int,
-        default=24,
-        help="Maximum new tokens to generate per prompt",
+        default=12,
+        help="Maximum new tokens to generate per prompt (default: 12)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=16,
+        help="Number of prompts evaluated in parallel per GPU batch (default: 16)",
     )
     parser.add_argument(
         "--seed",
@@ -339,6 +392,7 @@ def main() -> None:
         backend=args.backend,
         quantization=args.quantization,
         max_new_tokens=args.max_new_tokens,
+        batch_size=args.batch_size,
         seed=args.seed,
         limit_per_category=args.limit_per_category,
         output_dir=args.output_dir,

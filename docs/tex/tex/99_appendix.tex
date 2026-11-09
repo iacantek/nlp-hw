@@ -107,7 +107,7 @@ Counterbalanced Pairs & $M = 600$ pairs/model ($300$ EN, $300$ KO query) \\
 Models Evaluated & \texttt{Qwen/Qwen2.5-7B-Instruct} (7.6B); \texttt{meta-llama/Llama-3.1-8B-Instruct} (8.0B) \\
 Target GPU Hardware & Google Colab NVIDIA T4 (16 GB GDDR6 VRAM) \\
 Quantization Config & 4-bit NF4 (\texttt{bitsandbytes}), double quant, FP16 \\
-Decoding Config & Greedy ($\tau = 0.0$, \texttt{do\_sample=False}), \texttt{max\_new\_tokens=24} \\
+Decoding Config & Greedy ($\tau = 0.0$, \texttt{do\_sample=False}), \texttt{max\_new\_tokens=12}, \texttt{batch\_size=16} \\
 Candidate Scoring & Batched teacher-forced length-normalized $\ell_{\text{concept}}$ \\
 Random Seed & \texttt{seed = 42} (dataset, simulation, qualitative sample) \\
 Python Dependencies & \texttt{torch>=2.1}, \texttt{transformers>=4.43}, \texttt{bitsandbytes>=0.43}, \texttt{scipy} \\
