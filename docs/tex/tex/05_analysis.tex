@@ -3,7 +3,7 @@
 
 To dissect the mechanisms underlying English authority bias under factual conflict, we perform three controlled ablations---stratifying by closed-book parametric memory (§\ref{subsec:ablation_prior}), answer category and script divergence (§\ref{subsec:ablation_category}), and passage position (§\ref{subsec:ablation_order})---followed by a qualitative analysis of randomly sampled counterbalanced pairs (§\ref{subsec:qualitative}). Throughout, we separate plain empirical reporting from mechanistic interpretation.
 
-\begin{table}[t]
+\begin{table}[b]
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{0.88}
@@ -31,63 +31,57 @@ To dissect the mechanisms underlying English authority bias under factual confli
 \begin{table*}[t]
 \centering
 \scriptsize
-\renewcommand{\arraystretch}{0.82}
+\renewcommand{\arraystretch}{0.80}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}p{4.0cm}p{2.9cm}p{6.2cm}p{3.1cm}p{3.1cm}@{}}
+\begin{tabular}{@{}p{3.8cm}p{2.6cm}p{6.4cm}p{3.1cm}p{3.1cm}@{}}
 \toprule
 \textbf{Item / Query ($\ell_q$, Order)} & \textbf{Claims ($A$ vs.\ $B$)} & \textbf{Counterbalanced Contexts ($\text{Pair}_1$ vs.\ $\text{Pair}_2$)} & \textbf{\texttt{Qwen-2.5-7B}} & \textbf{\texttt{Llama-3.1-8B}} \\
 \midrule
 \textbf{ID 70 (\textsc{Date})} ($\ell_q{=}\text{en}$, \texttt{KO-first})\newline
 ``when was rime of the ancient mariner written'' &
 \textbf{True $A$:} \texttt{1798} / \texttt{1798}\newline
-\textbf{False $B$:} \texttt{1812} / \texttt{1812} (Shared Arabic digits) &
-$\textbf{Pair}_1$: $D_1(\text{KO})$: ``\ko{시 노수부의 노래가 쓰인 해는 \textbf{1812}년이다.}'' \emph{(...\textbf{1812}-nyeon-ida.)} $D_2(\text{EN})$: ``...The Rime of the Ancient Mariner was written in \textbf{1798}.''\newline
-$\textbf{Pair}_2$: $D_1(\text{KO})$: ``\ko{...\textbf{1798}년이다.}'' $D_2(\text{EN})$: ``...written in \textbf{1812}.'' &
-$\text{P}_1$: \texttt{1798} ($A, +5.13$)\newline
-$\text{P}_2$: \texttt{1812} ($B, -5.94$)\newline
-\textbf{Regime:} $\boldsymbol{A \to B}$ (\emph{EN digit flip}) &
-$\text{P}_1$: \texttt{1798} ($A, +6.88$)\newline
-$\text{P}_2$: \texttt{1812} ($B, -4.81$)\newline
-\textbf{Regime:} $\boldsymbol{A \to B}$ (\emph{EN digit flip}) \\
+\textbf{False $B$:} \texttt{1812} / \texttt{1812} &
+$\textbf{Pair}_1$: $D_1(\text{KO})$: ``\ko{...1812년이다.}'' $D_2(\text{EN})$: ``...written in \textbf{1798}.''\newline
+$\textbf{Pair}_2$: $D_1(\text{KO})$: ``\ko{...1798년이다.}'' $D_2(\text{EN})$: ``...written in \textbf{1812}.'' &
+$\text{P}_1$: \texttt{1798} ($A, +5.13$), $\text{P}_2$: \texttt{1812} ($B, -5.94$)\newline
+\textbf{Regime:} $\boldsymbol{A \to B}$ (EN digit flip) &
+$\text{P}_1$: \texttt{1798} ($A, +6.88$), $\text{P}_2$: \texttt{1812} ($B, -4.81$)\newline
+\textbf{Regime:} $\boldsymbol{A \to B}$ (EN digit flip) \\
 \midrule
 \textbf{ID 6 (\textsc{Entity})} ($\ell_q{=}\text{en}$, \texttt{KO-first})\newline
 ``what element on the periodic table has the highest melting point'' &
-\textbf{True $A$:} \texttt{carbon} / \ko{탄소} \emph{(tanso)}\newline
-\textbf{False $B$:} \texttt{tungsten} / \ko{텅스텐} \emph{(teongseuten)} &
-$\textbf{Pair}_1$: $D_1(\text{KO})$: ``\ko{주기율표에서 가장 높은 녹는점을 가진 원소는 \textbf{텅스텐}이다.}'' \emph{(...wonso-neun \textbf{teongseuten}-ida.)} $D_2(\text{EN})$: ``...melting point is \textbf{carbon}.''\newline
+\textbf{True $A$:} \texttt{carbon} / \ko{탄소}\newline
+\textbf{False $B$:} \texttt{tungsten} / \ko{텅스텐} &
+$\textbf{Pair}_1$: $D_1(\text{KO})$: ``\ko{...원소는 \textbf{텅스텐}이다.}'' $D_2(\text{EN})$: ``...melting point is \textbf{carbon}.''\newline
 $\textbf{Pair}_2$: $D_1(\text{KO})$: ``\ko{...원소는 \textbf{탄소}이다.}'' $D_2(\text{EN})$: ``...is \textbf{tungsten}.'' &
-$\text{P}_1$: \texttt{carbon} ($A, +0.92$)\newline
-$\text{P}_2$: \texttt{tungsten} ($B, -15.94$)\newline
-\textbf{Regime:} $\boldsymbol{A \to B}$ (\emph{EN overrides $A$}) &
-$\text{P}_1$: \texttt{tungsten} ($B, -2.63$)\newline
-$\text{P}_2$: \texttt{tungsten} ($B, -9.41$)\newline
-\textbf{Regime:} $\boldsymbol{B \to B}$ (\emph{$\Delta\ell_m{=}{+}6.78$}) \\
+$\text{P}_1$: \texttt{carbon} ($A, +0.92$), $\text{P}_2$: \texttt{tungsten} ($B, -15.94$)\newline
+\textbf{Regime:} $\boldsymbol{A \to B}$ (EN overrides $A$) &
+$\text{P}_1$: \texttt{tungsten} ($B, -2.63$), $\text{P}_2$: \texttt{tungsten} ($B, -9.41$)\newline
+\textbf{Regime:} $\boldsymbol{B \to B}$ ($\Delta\ell_m{=}{+}6.78$) \\
 \midrule
 \textbf{ID 139 (\textsc{Number})} ($\ell_q{=}\text{ko}$, \texttt{EN-first})\newline
-\ko{몇 개의 천연 보호구역과 국립 공원이 있나요} \emph{(myeot gae-ui cheonyeon bohoguyeok-gwa gungnip gongwon-i innayo)} ``How many wildlife sanctuaries?'' &
+\ko{몇 개의 천연 보호구역과 국립 공원이 있나요}\newline
+\emph{(How many wildlife sanctuaries?)} &
 \textbf{True $A$:} \texttt{543} / \texttt{543}\newline
-\textbf{False $B$:} \texttt{415} / \texttt{415} (Shared Arabic digits) &
-$\textbf{Pair}_1$: $D_1(\text{EN})$: ``India maintains \textbf{543} designated wildlife sanctuaries...'' $D_2(\text{KO})$: ``\ko{인도에 지정된 야생동물 천연 보호구역의 수는 \textbf{415}곳이다.}'' \emph{(...\textbf{415}-gos-ida.)}\newline
+\textbf{False $B$:} \texttt{415} / \texttt{415} &
+$\textbf{Pair}_1$: $D_1(\text{EN})$: ``India maintains \textbf{543}...'' $D_2(\text{KO})$: ``\ko{...수는 \textbf{415}곳이다.}''\newline
 $\textbf{Pair}_2$: $D_1(\text{EN})$: ``...maintains \textbf{415}...'' $D_2(\text{KO})$: ``\ko{...수는 \textbf{543}곳이다.}'' &
-$\text{P}_1$: \texttt{543} ($A, +1.00$)\newline
-$\text{P}_2$: \texttt{415} ($B, -1.46$)\newline
-\textbf{Regime:} $\boldsymbol{A \to B}$ (\emph{EN overrides $D_2$}) &
-$\text{P}_1$: \texttt{543} ($A, +0.13$)\newline
-$\text{P}_2$: \texttt{543} ($A, +3.63$)\newline
-\textbf{Regime:} $\boldsymbol{A \to A}$ (\emph{Retains $A$}) \\
+$\text{P}_1$: \texttt{543} ($A, +1.00$), $\text{P}_2$: \texttt{415} ($B, -1.46$)\newline
+\textbf{Regime:} $\boldsymbol{A \to B}$ (EN overrides $D_2$) &
+$\text{P}_1$: \texttt{543} ($A, +0.13$), $\text{P}_2$: \texttt{543} ($A, +3.63$)\newline
+\textbf{Regime:} $\boldsymbol{A \to A}$ (Retains $A$) \\
 \midrule
 \textbf{ID 28 (\textsc{Entity})} ($\ell_q{=}\text{ko}$, \texttt{EN-first})\newline
-\ko{네덜란드 암스테르담에 무슨 언어를 쓰나요} \emph{(nedeollandeu amseutereudam-e museun eoneo-reul sseunayo)} ``What language is spoken in Amsterdam?'' &
-\textbf{True $A$:} \texttt{Dutch} / \ko{네덜란드어} \emph{(nedeollandeu-eo)}\newline
-\textbf{False $B$:} \texttt{Flemish} / \ko{플라망어} \emph{(peullamang-eo)} &
-$\textbf{Pair}_1$: $D_1(\text{EN})$: ``The official language spoken in Amsterdam, Holland is \textbf{Dutch}.'' $D_2(\text{KO})$: ``\ko{...공식 언어는 \textbf{플라망어}이다.}'' \emph{(...\textbf{peullamang-eo}-ida.)}\newline
-$\textbf{Pair}_2$: $D_1(\text{EN})$: ``...is \textbf{Flemish}.'' $D_2(\text{KO})$: ``\ko{...공식 언어는 \textbf{네덜란드어}이다.}'' \emph{(...\textbf{nedeollandeu-eo}-ida.)} &
-$\text{P}_1$: \ko{플라망어} ($B, -0.20$)\newline
-$\text{P}_2$: \ko{네덜란드어} ($A, +2.75$)\newline
-\textbf{Regime:} $\boldsymbol{B \to A}$ (\emph{KO script + $D_2$}) &
-$\text{P}_1$: \ko{네덜란드어} ($A, +1.01$)\newline
-$\text{P}_2$: \ko{네덜란드어} ($A, +1.46$)\newline
-\textbf{Regime:} $\boldsymbol{A \to A}$ (\emph{Retains $A$}) \\
+\ko{네덜란드 암스테르담에 무슨 언어를 쓰나요}\newline
+\emph{(What language is spoken in Amsterdam?)} &
+\textbf{True $A$:} \texttt{Dutch} / \ko{네덜란드어}\newline
+\textbf{False $B$:} \texttt{Flemish} / \ko{플라망어} &
+$\textbf{Pair}_1$: $D_1(\text{EN})$: ``...spoken in Amsterdam is \textbf{Dutch}.'' $D_2(\text{KO})$: ``\ko{...언어는 \textbf{플라망어}이다.}''\newline
+$\textbf{Pair}_2$: $D_1(\text{EN})$: ``...is \textbf{Flemish}.'' $D_2(\text{KO})$: ``\ko{...언어는 \textbf{네덜란드어}이다.}'' &
+$\text{P}_1$: \ko{플라망어} ($B, -0.20$), $\text{P}_2$: \ko{네덜란드어} ($A, +2.75$)\newline
+\textbf{Regime:} $\boldsymbol{B \to A}$ (KO script + $D_2$) &
+$\text{P}_1$: \ko{네덜란드어} ($A, +1.01$), $\text{P}_2$: \ko{네덜란드어} ($A, +1.46$)\newline
+\textbf{Regime:} $\boldsymbol{A \to A}$ (Retains $A$) \\
 \bottomrule
 \end{tabular}%
 }
@@ -101,30 +95,30 @@ $\text{P}_2$: \ko{네덜란드어} ($A, +1.46$)\newline
 \label{subsec:ablation_prior}
 
 \paragraph{Empirical Observations.}
-Table~\ref{tab:ablation_prior} reports $\text{EPR}$ and the $\text{Pair}_2$ Truth Override Rate ($\text{TOR}$) across prior-knowledge strata. First, $\text{TOR}$ increases monotonically as parametric recall weakens: for \texttt{Qwen-2.5-7B}, $\text{TOR}$ rises from \qwenPKKnownBothOverrideAll\% on $\textsc{Known-Both}$ ($N{=}\qwenKnownBothN$) to \qwenPKKnownENOnlyOverrideAll\% on $\textsc{Known-EN-Only}$ ($N{=}\qwenKnownENOnlyN$) and \qwenPKUnknownBothOverrideAll\% on $\textsc{Unknown-Both}$ ($N{=}\qwenUnknownBothN$). For \texttt{Llama-3.1-8B}, $\text{TOR}$ similarly rises from \llamaPKKnownBothOverrideAll\% ($\textsc{Known-Both}$, $N{=}\llamaKnownBothN$) to \llamaPKKnownENOnlyOverrideAll\% ($\textsc{Known-EN-Only}$, $N{=}\llamaKnownENOnlyN$) and \llamaPKUnknownBothOverrideAll\% ($\textsc{Unknown-Both}$, $N{=}\llamaUnknownBothN$). Second, overall $\text{EPR}_{\text{All}}$ peaks on $\textsc{Known-EN-Only}$ (\qwenPKKnownENOnlyEPRAll\% Qwen, \llamaPKKnownENOnlyEPRAll\% Llama, $p < 0.0001$), where asymmetric English recall reinforces English context preference. Third, even within $\textsc{Known-Both}$---where the model recalls ground-truth $A_i$ in both languages without context---$\text{EPR}_{\text{All}}$ remains \qwenPKKnownBothEPRAll\% for Qwen ($p < 0.0001$) and \llamaPKKnownBothEPRAll\% for Llama ($p{=}0.0026$), with false English passages overriding known facts in \qwenPKKnownBothOverrideAll\% and \llamaPKKnownBothOverrideAll\% of $\text{Pair}_2$ runs.
+Table~\ref{tab:ablation_prior} reports $\text{EPR}$ and the $\text{Pair}_2$ Truth Override Rate ($\text{TOR}$) across prior-knowledge strata. First, $\text{TOR}$ increases monotonically as parametric recall weakens: from \qwenPKKnownBothOverrideAll\% ($\textsc{Known-Both}$) to \qwenPKKnownENOnlyOverrideAll\% ($\textsc{Known-EN-Only}$) and \qwenPKUnknownBothOverrideAll\% ($\textsc{Unknown-Both}$) in Qwen, and from \llamaPKKnownBothOverrideAll\% to \llamaPKKnownENOnlyOverrideAll\% and \llamaPKUnknownBothOverrideAll\% in Llama. Second, overall $\text{EPR}_{\text{All}}$ peaks on $\textsc{Known-EN-Only}$ (\qwenPKKnownENOnlyEPRAll\% Qwen, \llamaPKKnownENOnlyEPRAll\% Llama, $p < 0.0001$), where asymmetric English recall reinforces English context preference. Third, even within $\textsc{Known-Both}$---where the model recalls ground-truth $A_i$ in both languages without context---$\text{EPR}_{\text{All}}$ remains \qwenPKKnownBothEPRAll\% for Qwen ($p < 0.0001$) and \llamaPKKnownBothEPRAll\% for Llama ($p{=}0.0026$), with false English passages overriding known facts in \qwenPKKnownBothOverrideAll\% and \llamaPKKnownBothOverrideAll\% of $\text{Pair}_2$ runs.
 
 \paragraph{Interpretation.}
-These findings show that parametric memory ($\mathcal{H}_{\text{Prior}}$) moderates truth override ($A \to A$ reaches $50.6\%$ Qwen and $60.0\%$ Llama on $\textsc{Known-Both}$ vs.\ $31.2\%$ and $30.1\%$ on $\textsc{Unknown-Both}$) but does not eliminate English bias. On $\textsc{Known-EN-Only}$ items, Korean-query preference ($\text{EPR}_{\text{KO}}{=}\qwenPKKnownENOnlyEPRKO\%$ Qwen, $\llamaPKKnownENOnlyEPRKO\%$ Llama) closely matches $\textsc{Unknown-Both}$, indicating that because cross-lingual knowledge transfer in transformer weights is incomplete \citep{qi2023crosslingual,wang2025lost}, English-only priors fail to protect Korean queries from false English context.
+These findings show that parametric memory ($\mathcal{H}_{\text{Prior}}$) moderates truth override ($A \to A$ reaches $50.6\%$ Qwen and $60.0\%$ Llama on $\textsc{Known-Both}$ vs.\ $31.2\%$ and $30.1\%$ on $\textsc{Unknown-Both}$) but does not eliminate English bias. On $\textsc{Known-EN-Only}$ items, Korean-query preference ($\text{EPR}_{\text{KO}}{=}\qwenPKKnownENOnlyEPRKO\%$ Qwen, $\llamaPKKnownENOnlyEPRKO\%$ Llama) matches $\textsc{Unknown-Both}$, showing that incomplete cross-lingual transfer in weights \citep{qi2023crosslingual,wang2025lost} prevents English priors from shielding Korean queries.
 
 \subsection{Ablation 2: Answer Category and Surface Script Divergence}
 \label{subsec:ablation_category}
 
 \paragraph{Empirical Observations.}
-Table~\ref{tab:ablation_category} compares $\textsc{Entity}$, $\textsc{Date}$, and $\textsc{Number}$. Strikingly, English preference is strongest on shared Arabic numerals: $\textsc{Date}$ reaches $\text{EPR}_{\text{All}}{=}\mathbf{\qwenCatDateEPRAll\%}$ for Qwen ($A \to B{=}\qwenCatDateFlipABAll\%$) and $\mathbf{\llamaCatDateEPRAll\%}$ for Llama ($A \to B{=}\llamaCatDateFlipABAll\%, p < 10^{-14}$), followed by $\textsc{Number}$ at \qwenCatNumberEPRAll\% and \llamaCatNumberEPRAll\% ($A \to B{=}\qwenCatNumberFlipABAll\%$ and $\llamaCatNumberFlipABAll\%, p < 0.01$). Conversely, $\textsc{Entity}$ items exhibit higher truth consistency ($A \to A{=}60.5\%$ Qwen, $57.5\%$ Llama) and lower $\text{EPR}_{\text{All}}$ (\qwenCatEntityEPRAll\% Qwen, \llamaCatEntityEPRAll\% Llama; $\text{EPR}_{\text{KO}}{=}50.0\%$ for Qwen), while Korean language drift occurs exclusively on $\textsc{Entity}$ ($\text{LC}_{\text{KO}}{=}\qwenCatEntityLCKO\%$ and $\llamaCatEntityLCKO\%$ vs.\ $100.0\%$ on $\textsc{Date}$ and $\textsc{Number}$).
+Table~\ref{tab:ablation_category} compares $\textsc{Entity}$, $\textsc{Date}$, and $\textsc{Number}$. English preference is strongest on shared Arabic numerals: $\textsc{Date}$ reaches $\text{EPR}_{\text{All}}{=}\mathbf{\qwenCatDateEPRAll\%}$ in Qwen ($A \to B{=}\qwenCatDateFlipABAll\%$) and $\mathbf{\llamaCatDateEPRAll\%}$ in Llama ($A \to B{=}\llamaCatDateFlipABAll\%, p < 10^{-14}$), followed by $\textsc{Number}$ at \qwenCatNumberEPRAll\% and \llamaCatNumberEPRAll\% ($A \to B{=}\qwenCatNumberFlipABAll\%$ and $\llamaCatNumberFlipABAll\%, p < 0.01$). Conversely, $\textsc{Entity}$ exhibits higher truth retention ($A \to A{=}60.5\%$ Qwen, $57.5\%$ Llama) and lower $\text{EPR}_{\text{All}}$ (\qwenCatEntityEPRAll\% Qwen, \llamaCatEntityEPRAll\% Llama; $\text{EPR}_{\text{KO}}{=}50.0\%$ Qwen), with language drift restricted to $\textsc{Entity}$ ($\text{LC}_{\text{KO}}{=}\qwenCatEntityLCKO\%$ and $\llamaCatEntityLCKO\%$ vs.\ $100.0\%$).
 
 \paragraph{Interpretation.}
-Why does English bias peak on $\textsc{Date}$ and $\textsc{Number}$ rather than $\textsc{Entity}$? Because both models enforce near-ceiling output language consistency ($\text{LC}_{\text{KO}} \ge 97.0\%$), answering a Korean $\textsc{Entity}$ query requires emitting Hangul tokens, which directly anchors attention to the Hangul entity $c_{\text{ko}}$ in $d_{\text{ko}}(\cdot)$ and counteracts English context authority. By contrast, on $\textsc{Date}$ and $\textsc{Number}$ items, both passages assert identical Arabic numerals ($c_{\text{en}}{=}c_{\text{ko}}$, e.g., \texttt{1798} vs.\ \texttt{1812}), so output-script constraints provide \emph{zero disambiguating signal} between the two passages. Deprived of script-level anchoring, the generator adjudicates purely by passage-sentence language and overwhelmingly trusts the English assertion.
+Why does English bias peak on $\textsc{Date}$ and $\textsc{Number}$ rather than $\textsc{Entity}$? Because both models enforce near-ceiling output language consistency ($\text{LC}_{\text{KO}} \ge 97.0\%$), answering a Korean $\textsc{Entity}$ query requires emitting Hangul tokens, which directly anchors attention to the Hangul entity $c_{\text{ko}}$ in $d_{\text{ko}}(\cdot)$ and counteracts English context authority. By contrast, on $\textsc{Date}$ and $\textsc{Number}$ items, both passages assert identical Arabic numerals ($c_{\text{en}}{=}c_{\text{ko}}$, e.g., \texttt{1798} vs.\ \texttt{1812}), so output-script constraints provide \emph{zero disambiguating signal}. Deprived of script-level anchoring, the generator adjudicates purely by passage language and overwhelmingly trusts English assertions.
 
 \subsection{Ablation 3: Document Ordering and Scoring Modality}
 \label{subsec:ablation_order}
 
 \paragraph{Empirical Observations.}
-Table~\ref{tab:ablation_order} compares \texttt{EN-first} ($D_1{=}\text{EN}, D_2{=}\text{KO}$) versus \texttt{KO-first} ($D_1{=}\text{KO}, D_2{=}\text{EN}$). Both models exhibit a recency preference toward $D_2$, which immediately precedes the question and \texttt{Answer:} cue (first-document preference is \qwenFirstDocAll\% for Qwen and \llamaFirstDocAll\% for Llama in Table~\ref{tab:main_results}, i.e., $60.5\%$ and $66.7\%$ $D_2$ preference). When English is placed at $D_2$ (\texttt{KO-first}), recency bias and English authority reinforce each other, driving $\text{EPR}_{\text{All}}$ to \textbf{\qwenOrdKOFirstEPRAll\%} in Qwen and \textbf{\llamaOrdKOFirstEPRAll\%} in Llama ($A \to B{=}54.0\%$ in both models, $p < 10^{-40}$). When Korean is placed at $D_2$ (\texttt{EN-first}), recency opposes English authority: English preference still prevails in Qwen ($\text{EPR}_{\text{All}}{=}\qwenOrdENFirstEPRAll\%$, $\text{EPR}_{\text{EN}}{=}\qwenOrdENFirstEPREN\%$), while stronger recency in Llama pulls $\text{EPR}_{\text{All}}$ to \llamaOrdENFirstEPRAll\% ($\text{EPR}_{\text{EN}}{=}\llamaOrdENFirstEPREN\%$, $\text{EPR}_{\text{KO}}{=}\llamaOrdENFirstEPRKO\%$). Across Table~\ref{tab:main_results}, discrete extraction ($y_{\text{text}}$) and concept log-probabilities ($y_{\text{lp}}$) agree within $0.5$ points on overall $\text{EPR}$ (\qwenEPRLPAll\% vs.\ \qwenEPRTxtAll\% for Qwen; \llamaEPRLPAll\% vs.\ \llamaEPRTxtAll\% for Llama), accompanied by positive paired shifts $\Delta\ell$ ($+\qwenLPShiftMeanAll$ nats for Qwen, $t{=}\qwenLPShiftTAll$; $+\llamaLPShiftMeanAll$ nats for Llama, $t{=}\llamaLPShiftTAll, p < 0.0001$).
+Table~\ref{tab:ablation_order} compares \texttt{EN-first} ($D_1{=}\text{EN}, D_2{=}\text{KO}$) versus \texttt{KO-first} ($D_1{=}\text{KO}, D_2{=}\text{EN}$). Both models exhibit a recency preference toward $D_2$ preceding the question and \texttt{Answer:} prompt ($D_2$ preference is $60.5\%$ Qwen and $66.7\%$ Llama). When English is placed at $D_2$ (\texttt{KO-first}), recency and English authority reinforce each other, driving $\text{EPR}_{\text{All}}$ to \textbf{\qwenOrdKOFirstEPRAll\%} in Qwen and \textbf{\llamaOrdKOFirstEPRAll\%} in Llama ($A \to B{=}54.0\%$ both, $p < 10^{-40}$). When Korean is at $D_2$ (\texttt{EN-first}), recency opposes English authority: English preference still prevails in Qwen ($\text{EPR}_{\text{All}}{=}\qwenOrdENFirstEPRAll\%$), while stronger recency in Llama pulls $\text{EPR}_{\text{All}}$ to \llamaOrdENFirstEPRAll\%. Discrete extraction ($y_{\text{text}}$) and concept log-probabilities ($y_{\text{lp}}$) agree within $0.5$ points on overall $\text{EPR}$ (\qwenEPRLPAll\% vs.\ \qwenEPRTxtAll\% Qwen; \llamaEPRLPAll\% vs.\ \llamaEPRTxtAll\% Llama), with significant positive paired shifts $\Delta\ell$ ($+\qwenLPShiftMeanAll$ nats Qwen, $t{=}\qwenLPShiftTAll$; $+\llamaLPShiftMeanAll$ nats Llama, $t{=}\llamaLPShiftTAll, p < 0.0001$).
 
 \paragraph{Interpretation.}
-The strong $D_2$ recency effect demonstrates why counterbalancing passage order is essential: evaluating a single fixed order would either inflate or mask cross-lingual bias. Averaging across \texttt{EN-first} and \texttt{KO-first} cancels symmetric position effects, isolating net English authority ($\text{EPR}{=}\qwenEPRAll\%$ and $\llamaEPRAll\%$), while the tight agreement between $y_{\text{text}}$ and $y_{\text{lp}}$ confirms that this bias reflects internal concept probabilities rather than free-form decoding artifacts \citep{qi2025}.
+The strong $D_2$ recency effect demonstrates why counterbalancing passage order is essential: evaluating a single fixed order would either inflate or mask cross-lingual bias. Averaging across \texttt{EN-first} and \texttt{KO-first} cancels symmetric position effects, isolating net English authority ($\text{EPR}{=}\qwenEPRAll\%$ and $\llamaEPRAll\%$), while the close agreement between $y_{\text{text}}$ and $y_{\text{lp}}$ confirms this reflects internal concept probabilities rather than decoding artifacts \citep{qi2025}.
 
 \subsection{Qualitative Analysis of Randomly Sampled Examples}
 \label{subsec:qualitative}
 
-Table~\ref{tab:qualitative} presents four representative cases from our fixed pseudo-random sample ($\text{seed}{=}42$): (1) \textbf{Shared-Numeral English Flip (ID~70):} On the date of \emph{The Rime of the Ancient Mariner}, both models select \texttt{1798} in $\text{Pair}_1$ ($\Delta\ell{=}{+}5.13$ and $+6.88$) but flip to false year \texttt{1812} in $\text{Pair}_2$ ($\Delta\ell{=}{-}5.94$ and $-4.81$, $A \to B$), illustrating pure English sentence authority on shared digits. (2) \textbf{Entity Override \& Continuous Margin Shift (ID~6):} On the highest-melting-point element, Qwen flips from \texttt{carbon} ($+0.92$) to \texttt{tungsten} ($-15.94$, $A \to B$); Llama favors its misconception \texttt{tungsten} in both pairs ($B \to B$), yet moving \texttt{tungsten} from Korean to English deepens its log-probability margin by $\Delta\ell_m{=}{+}6.78$ nats ($-2.63 \to -9.41$). (3) \textbf{Cross-Lingual Override Against Recency (ID~139):} Even on a Korean query under \texttt{EN-first} (where Korean is at favored position $D_2$), Qwen flips from \texttt{543} ($+1.00$) to the false English number \texttt{415} ($-1.46$, $A \to B$), whereas Llama retains \texttt{543} ($A \to A$). (4) \textbf{Hangul Script Anchoring (ID~28):} On the Korean entity query for Amsterdam's language under \texttt{EN-first}, Llama retains \ko{네덜란드어} ($A \to A$) while Qwen follows the Hangul $D_2$ passage ($B \to A$, margin $-0.20$ in $\text{P}_1$ vs.\ $+2.75$ in $\text{P}_2$), reflecting the script-anchoring effect identified in §\ref{subsec:ablation_category}.
+Table~\ref{tab:qualitative} presents four representative cases from our fixed pseudo-random sample ($\text{seed}{=}42$): (1) \textbf{Shared-Numeral English Flip (ID~70):} On the date of \emph{The Rime of the Ancient Mariner}, both models select \texttt{1798} in $\text{Pair}_1$ ($\Delta\ell{=}{+}5.13$, $+6.88$) but flip to false year \texttt{1812} in $\text{Pair}_2$ ($\Delta\ell{=}{-}5.94$, $-4.81$, $A \to B$), illustrating English authority on shared digits. (2) \textbf{Entity Override \& Continuous Shift (ID~6):} On the highest-melting-point element, Qwen flips from \texttt{carbon} ($+0.92$) to \texttt{tungsten} ($-15.94$, $A \to B$); Llama predicts \texttt{tungsten} in both pairs ($B \to B$), yet moving \texttt{tungsten} to English deepens its margin by $\Delta\ell_m{=}{+}6.78$ nats ($-2.63 \to -9.41$). (3) \textbf{Cross-Lingual Override Against Recency (ID~139):} Even on a Korean query under \texttt{EN-first} (Korean at favored $D_2$), Qwen flips from \texttt{543} ($+1.00$) to false English number \texttt{415} ($-1.46$, $A \to B$), while Llama retains \texttt{543} ($A \to A$). (4) \textbf{Hangul Script Anchoring (ID~28):} On Amsterdam's language under \texttt{EN-first}, Llama retains \ko{네덜란드어} ($A \to A$) while Qwen follows Hangul $D_2$ ($B \to A$, margin $-0.20$ vs.\ $+2.75$), reflecting the script anchoring from §\ref{subsec:ablation_category}.
