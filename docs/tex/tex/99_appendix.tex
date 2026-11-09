@@ -17,14 +17,14 @@ To guide the transition from this Homework~2 manuscript to the final Homework~3 
 \toprule
 \textbf{Affected Section} & \textbf{Identified Weakness in HW~2 Draft} & \textbf{Concrete Action Plan for Homework~3} & \textbf{Falsifiable Completion Criterion} \\
 \midrule
-\textbf{W1:} §\ref{subsec:implementation}, §\ref{subsec:main_results}, §\ref{sec:analysis} (Tables~\ref{tab:main_results}--\ref{tab:qualitative}) &
-\textbf{Simulated Baseline Numbers Pending Live GPU Execution:} While the complete inference and statistical evaluation suite is implemented and verified, the numerical tables in this draft are populated by the calibrated deterministic simulation mode prior to live GPU execution. &
-Execute the 4-bit quantized Hugging Face evaluation across all $4{,}200$ prompts on an NVIDIA T4 GPU for both \texttt{Qwen-2.5-7B-Instruct} and \texttt{Llama-3.1-8B-Instruct}, and synchronize all quantitative tables and qualitative examples with the empirical GPU outputs. &
-$100\%$ of the $4{,}200$ model evaluation records ($2{,}100$ per model) originate from live T4 GPU inference and are reflected across Tables~\ref{tab:main_results}--\ref{tab:qualitative}. \\
+\textbf{W1:} §\ref{subsec:models_baselines}, §\ref{subsec:main_results} &
+\textbf{4-Bit NF4 Quantization and Single 7B--8B Scale Scope:} To execute all $4{,}200$ runs on a single 16 GB NVIDIA T4 GPU, both \texttt{Qwen-2.5-7B-Instruct} and \texttt{Llama-3.1-8B-Instruct} were evaluated under 4-bit NormalFloat (\textsc{nf4}) quantization at the 7B--8B parameter scale, leaving open whether low-bit quantization noise or model scale modulates cross-lingual conflict resolution. &
+Evaluate a stratified diagnostic subset under native 16-bit (FP16/BF16) precision and compare against a larger model scale (e.g., \texttt{Qwen-2.5-14B-Instruct} or \texttt{Llama-3.1-70B-Instruct}) to isolate quantization and scale effects on $\text{EPR}$ and $\text{TOR}$. &
+Report paired $\Delta\text{EPR}$ and McNemar $\chi^2$ comparisons between 4-bit NF4 and native 16-bit precision in §\ref{sec:analysis}. \\
 \midrule
-\textbf{W2:} §\ref{subsec:rw_generator}, §\ref{subsec:protocol}, §\ref{sec:analysis} &
-\textbf{Absence of Conflict-Aware Mitigation Baselines:} The current draft diagnoses severe Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$--\llamaPairTwoOverrideAll\%) in $\text{Pair}_2$, but does not evaluate whether prompt-level or decoding-time interventions can reduce English authority bias. &
-Implement and evaluate two inference-time mitigation strategies: (1) \emph{Language-Neutral Verification Prompting} (instructing the model to cross-check claims independently of passage language) and (2) \emph{Prior-Anchored Logit Calibration} comparing closed-book vs.\ context-conditioned log-probabilities. &
+\textbf{W2:} §\ref{subsec:rw_generator}, §\ref{subsec:protocol}, §\ref{subsec:ablation_order} &
+\textbf{Absence of Conflict-Aware and Position-Debiasing Mitigations:} The current draft diagnoses high Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$ and $\llamaPairTwoOverrideAll\%$) and a strong $D_2$ recency interaction (§\ref{subsec:ablation_order}), but does not test inference-time mitigations. &
+Implement and evaluate two inference-time mitigations: (1) \emph{Language-Neutral Verification Prompting} (instructing the model to cross-check claims against parametric knowledge independently of passage language or position) and (2) \emph{Order-Averaged Logit Ensembling} across swapped $(D_1, D_2)$ orders. &
 Add a dedicated mitigation subsection and results table in §\ref{sec:analysis} reporting $\Delta\text{EPR}$ and $\Delta\text{TOR}$ for both interventions across all $600$ counterbalanced pairs per model. \\
 \midrule
 \textbf{W3:} §\ref{subsec:protocol}, §\ref{subsec:dataset} &
@@ -75,6 +75,7 @@ The complete source code, dataset (\texttt{src/data/mkqa\_conflict\_150.json}), 
 # Google Colab T4 GPU (Hugging Face 4-bit NF4):
 python -m src.run_experiment --backend hf \
   --models qwen llama --quantization 4bit \
+  --batch-size 16 --max-new-tokens 12 \
   --seed 42 --resume --export-latex
 # Fast CPU Validation / Simulation Backend:
 python -m src.run_experiment --backend simulate \
