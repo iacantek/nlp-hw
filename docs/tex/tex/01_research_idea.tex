@@ -1,0 +1,97 @@
+\section{Introduction}
+\label{sec:intro}
+
+Retrieval-Augmented Generation (RAG) grounds large language models (LLMs) in external evidence retrieved via dense passage retrieval backbones \citep{karpukhin2020dense} to mitigate hallucination and update stale parametric memory \citep{lewis2020retrieval}. In multilingual settings (mRAG), users issue queries in local languages while retrieval spans a global multi-language index \citep{asai2021xor,asai2021one,chirkova2024retrieval}. Because web corpora are heavily skewed toward English, cross-lingual retrieval is indispensable for answering non-English queries \citep{wu2024not,liu2025xrag}. Yet retrieving evidence across languages introduces a critical vulnerability: \emph{cross-lingual factual contradiction}, where an English passage and a local-language passage (e.g., Korean) retrieved for the same query assert mutually exclusive facts due to asynchronous updates, translation errors, or corpus-specific misinformation.
+
+Understanding how LLMs adjudicate direct cross-lingual contradictions is vital for trustworthy mRAG deployment. If a generator systematically treats English context as more authoritative than non-English context regardless of factual validity, an outdated or false English passage will overwrite an accurate local-language passage---a failure mode we term \emph{cross-lingual truth override}. Conversely, rigid query-language preference---whether trading off passage relevance for language alignment in citation prediction \citep{ki2025linguistic} or favoring native-language evidence in factual conflicts \citep{wu2024not,sharma2025faux}---may cause a generator to adopt a false local-language claim while ignoring corrective English evidence. Either bias degrades reliability and creates epistemic disparities across language communities \citep{sharma2025faux}.
+
+Isolating document-language bias during conflict resolution is challenging because three confounders co-occur in standard mRAG evaluation: (1) asymmetric \emph{parametric prior knowledge}, as LLMs recall facts more reliably in English than in lower-resource languages \citep{qi2023crosslingual,wang2025lost}; (2) \emph{passage position sensitivity} \citep{liu2024lost}, which confounds language preference when one language appears closer to the query; and (3) surface \emph{script interaction}, where mRAG generators favor Latin scripts over non-Latin scripts such as Korean Hangul \citep{park2025investigating,asai2022mia}, alongside decoding-time language drift \citep{li2025language}.
+
+\begin{figure*}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+{\footnotesize\linespread{0.92}\selectfont
+\setlength{\unitlength}{1mm}%
+\setlength{\fboxsep}{1.25mm}%
+\setlength{\fboxrule}{0.32mm}%
+\providecommand{\protohead}[2]{\put(#1,#2){\polygon*(0,0)(-2.1,0.85)(-1.6,0)(-2.1,-0.85)}}%
+\begin{picture}(218,55)(0,0)
+  % Left column: Query & Fact Pair (x: 0..46.1)
+  \put(0,27.5){\makebox(0,0)[l]{\fcolorbox{black!75}{white}{\parbox[c]{43mm}{\raggedright
+    \textbf{MKQA Query $q(\ell_q)$} ($\ell_q \in \{\text{EN}, \text{KO}\}$)\\[1.5pt]
+    \textbf{EN:} \emph{``who produces the most pistachios in the world?''}\\
+    \textbf{KO:} \ko{전 세계에서 누가 가장 많은 피스타치오를 생산하나요}\\
+    {\scriptsize\emph{(jeon segye-eseo nuga gajang manh-eun piseutachio-reul saengsanhanayo)}}\\[1.5pt]
+    \textbf{True $A$:} \texttt{Iran} / \ko{이란} \emph{(iran)}\\
+    \textbf{False $B$:} \texttt{Turkey} / \ko{터키} \emph{(teoki)}%
+  }}}}
+
+  % Middle column: Counterbalanced Pairs (x: 55..121.1)
+  \put(55,41.5){\makebox(0,0)[l]{\fcolorbox{blue!70!black}{blue!4}{\parbox[c]{63mm}{\raggedright
+    \textbf{Condition $\text{Pair}_1$: $[\text{EN}{=}A,\; \text{KO}{=}B]$} \hfill {\scriptsize(2 orders: EN/KO-first)}\\[1pt]
+    $\bullet$ $d_{\text{en}}(A)$: \emph{``The country that produces the most pistachios in the world is \textbf{Iran}.''}\\
+    $\bullet$ $d_{\text{ko}}(B)$: \ko{전 세계에서 피스타치오를 가장 많이 생산하는 국가는 \textbf{터키}이다.} {\scriptsize\emph{(...gukga-neun \textbf{teoki}-ida.)}}%
+  }}}}
+  \put(55,13.5){\makebox(0,0)[l]{\fcolorbox{teal!75!black}{teal!4}{\parbox[c]{63mm}{\raggedright
+    \textbf{Condition $\text{Pair}_2$: $[\text{KO}{=}A,\; \text{EN}{=}B]$} \hfill {\scriptsize(2 orders: EN/KO-first)}\\[1pt]
+    $\bullet$ $d_{\text{ko}}(A)$: \ko{전 세계에서 피스타치오를 가장 많이 생산하는 국가는 \textbf{이란}이다.} {\scriptsize\emph{(...gukga-neun \textbf{iran}-ida.)}}\\
+    $\bullet$ $d_{\text{en}}(B)$: \emph{``The country that produces the most pistachios in the world is \textbf{Turkey}.''}%
+  }}}}
+
+  % LLM Node (x: 130..155.1)
+  \put(130,27.5){\makebox(0,0)[l]{\fcolorbox{orange!70!black}{orange!8}{\parbox[c]{22mm}{\centering
+    \textbf{mRAG}\\
+    \textbf{Generator}\\[1.5pt]
+    {\scriptsize Qwen-2.5-7B}\\[-1pt]
+    {\scriptsize Llama-3.1-8B}\\[1.5pt]
+    {\scriptsize Dual Scoring:}\\[-1pt]
+    {\scriptsize Exact + $\ell_{\text{concept}}$}%
+  }}}}
+
+  % Right column: 4 Regimes (x: 164..217.1)
+  \put(164,47.5){\makebox(0,0)[l]{\fcolorbox{red!65!black}{red!7}{\parbox[c]{50mm}{\centering
+    \textbf{English Flip $(y_1{=}A \to y_2{=}B)$}\\[-1pt]
+    {\scriptsize Follows $\text{EN}$ doc (overrides truth in $\text{Pair}_2$)}%
+  }}}}
+  \put(164,34.2){\makebox(0,0)[l]{\fcolorbox{teal!65!black}{teal!8}{\parbox[c]{50mm}{\centering
+    \textbf{Korean Flip $(y_1{=}B \to y_2{=}A)$}\\[-1pt]
+    {\scriptsize Follows $\text{KO}$ doc (overrides truth in $\text{Pair}_1$)}%
+  }}}}
+  \put(164,20.8){\makebox(0,0)[l]{\fcolorbox{green!55!black}{green!7}{\parbox[c]{50mm}{\centering
+    \textbf{Truth-Consistent $(y_1{=}A \to y_2{=}A)$}\\[-1pt]
+    {\scriptsize Retains ground-truth $A$ in both pairs}%
+  }}}}
+  \put(164,7.5){\makebox(0,0)[l]{\fcolorbox{black!50}{gray!10}{\parbox[c]{50mm}{\centering
+    \textbf{False-Consistent $(y_1{=}B \to y_2{=}B)$}\\[-1pt]
+    {\scriptsize Selects counterfactual $B$ in both pairs}%
+  }}}}
+
+  % Orthogonal vector connectors (drawn with pict2e)
+  \color{black!75}\linethickness{0.32mm}%
+  % Query -> Pair1, Pair2
+  \Line(46.1,27.5)(50.5,27.5)%
+  \Line(50.5,13.5)(50.5,41.5)%
+  \Line(50.5,41.5)(53.4,41.5)\protohead{54.8}{41.5}%
+  \Line(50.5,13.5)(53.4,13.5)\protohead{54.8}{13.5}%
+  % Pair1, Pair2 -> LLM
+  \Line(121.1,41.5)(125.5,41.5)\Line(125.5,41.5)(125.5,30.0)\Line(125.5,30.0)(128.4,30.0)\protohead{129.8}{30.0}%
+  \Line(121.1,13.5)(125.5,13.5)\Line(125.5,13.5)(125.5,25.0)\Line(125.5,25.0)(128.4,25.0)\protohead{129.8}{25.0}%
+  % LLM -> 4 Regimes
+  \Line(155.1,31.0)(158.8,31.0)\Line(158.8,31.0)(158.8,47.5)\Line(158.8,47.5)(162.4,47.5)\protohead{163.8}{47.5}%
+  \Line(155.1,28.7)(160.2,28.7)\Line(160.2,28.7)(160.2,34.2)\Line(160.2,34.2)(162.4,34.2)\protohead{163.8}{34.2}%
+  \Line(155.1,26.3)(160.2,26.3)\Line(160.2,26.3)(160.2,20.8)\Line(160.2,20.8)(162.4,20.8)\protohead{163.8}{20.8}%
+  \Line(155.1,24.0)(158.8,24.0)\Line(158.8,24.0)(158.8,7.5)\Line(158.8,7.5)(162.4,7.5)\protohead{163.8}{7.5}%
+\end{picture}%
+}%
+}
+\vspace{-6pt}
+\caption{Overview of our counterbalanced cross-lingual conflict protocol. Each item pairs ground-truth claim $A$ against a type-matched counterfactual $B$ across swapped language assignments ($\text{Pair}_1$ vs.\ $\text{Pair}_2$), two query languages ($\text{EN}$, $\text{KO}$), and two passage orders, isolating English flips ($A \to B$) and Korean flips ($B \to A$) from truth retention ($A \to A$).}
+\label{fig:protocol}
+\vspace{-8pt}
+\end{figure*}
+
+Prior mRAG studies have not isolated how generators resolve direct cross-lingual factual contradictions: existing work examines \emph{retrieval and reranking} bias \citep{park2025investigating,wang2026languages}, \emph{distractor-based} context utilization where non-gold passages lack an answer \citep{qi2025consistency}, \emph{decoding-time language drift} under non-conflicting evidence \citep{li2025language}, or \emph{in-line citation selection} (\texttt{[1]}--\texttt{[9]}) over parallel or complementary documents without testing which claim the generator believes under contradiction \citep{ki2025linguistic}.
+
+To bridge this gap, we introduce a counterbalanced framework (Figure~\ref{fig:protocol}) on 150 culturally neutral questions from MKQA \citep{longpre2021mkqa} balanced across named entities, dates, and numbers (\textsc{MKQA-Conflict-150}). Embedding true claim $A$ and counterfactual $B$ into parallel templates with automatic Korean particle resolution across swapped language--claim assignments ($\text{Pair}_1: [\text{EN}{=}A, \text{KO}{=}B]$ vs.\ $\text{Pair}_2: [\text{KO}{=}A, \text{EN}{=}B]$), query languages, and passage orders decouples language bias from parametric memory and position bias. We test three hypotheses: (1) \textbf{$\mathcal{H}_{\text{EN}}$ (English Authority):} generators assign higher epistemic weight to English context, yielding an English Preference Rate ($\text{EPR}$) $> 50\%$ across both query languages and high truth override ($A \to B$) when English is false; (2) \textbf{$\mathcal{H}_{\text{QL}}$ (Query-Language Alignment):} generators exhibit query-language preference and linguistic nepotism \citep{ki2025linguistic,park2025investigating,sharma2025faux}, favoring English on English queries ($\text{EPR}_{\text{EN}} > 50\%$) but reversing preference toward Korean on Korean queries ($\text{EPR}_{\text{KO}} < 50\%$); and (3) \textbf{$\mathcal{H}_{\text{Prior}}$ (Parametric Truth Retention):} when a fact is known in closed-book memory, internal priors anchor generation to truth $A$ regardless of context language ($A \to A$), driving $\text{EPR} \to 50\%$.
+
+Evaluating \texttt{Qwen-2.5-7B-Instruct} \citep{yang2024qwen25} and \texttt{Llama-3.1-8B-Instruct} \citep{grattafiori2024llama3} across $4{,}200$ GPU runs confirms $\mathcal{H}_{\text{EN}}$: overall $\text{EPR}$ reaches \qwenEPRAll\% for Qwen and \llamaEPRAll\% for Llama ($p \qwenMcNemarPAll$). Even on Korean queries, $\text{EPR}_{\text{KO}}$ remains \qwenEPRKO\% and \llamaEPRKO\%, refuting a reversal under $\mathcal{H}_{\text{QL}}$, and false English passages override true Korean passages in \qwenPairTwoOverrideAll\% and \llamaPairTwoOverrideAll\% of $\text{Pair}_2$ runs.

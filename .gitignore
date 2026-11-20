@@ -227,3 +227,6 @@ local
 *.out
 *.pdf
 *.xml
+*.xdv
+*.fls
+*.fdb_latexmk
