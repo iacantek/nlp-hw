@@ -12,12 +12,13 @@ Let $\mathcal{D} = \{e_1, \dots, e_N\}$ denote a benchmark of $N{=}150$ cultural
 \label{subsec:protocol}
 
 In a naive test where English always asserts $A_i$ and Korean always asserts $B_i$, choosing $A_i$ conflates English preference with closed-book recall of truth $A_i$. We eliminate this confound by evaluating every item $e_i$ under two counterbalanced assignments:
+{\footnotesize
 \begin{equation}
-\footnotesize
-\text{Pair}_{i,1}\!:\! \{d_{\text{en}}(A_i), d_{\text{ko}}(B_i)\},\;
-\text{Pair}_{i,2}\!:\! \{d_{\text{ko}}(A_i), d_{\text{en}}(B_i)\}.
+\text{Pair}_{i,1}\!:\!\{d_{\text{en}}(A_i),d_{\text{ko}}(B_i)\},\;
+\text{Pair}_{i,2}\!:\!\{d_{\text{ko}}(A_i),d_{\text{en}}(B_i)\}.
 \label{eq:pairs}
-\end{equation}
+\end{equation}%
+}
 To control for query-language alignment and position bias, we cross $\{\text{Pair}_{i,1}, \text{Pair}_{i,2}\}$ with query languages $\ell_q \in \{\text{en}, \text{ko}\}$ and passage orders $o \in \{\text{EN-first}, \text{KO-first}\}$ ($\text{EN-first}$ places $d_{\text{en}}$ at $D_1$, $d_{\text{ko}}$ at $D_2$; $\text{KO-first}$ reverses them). This $2 \times 2 \times 2$ design yields $8$ cross-lingual runs per item ($4$ matched pairs $\bigl(x_{i,1}(\ell_q, o), x_{i,2}(\ell_q, o)\bigr)$ holding $(\ell_q, o)$ fixed while swapping the languages of $A_i$ and $B_i$).
 
 \subsection{Confounder Controls and Korean Morphosyntactic Resolution}
@@ -86,22 +87,24 @@ To avoid conflating comprehension with free-form generation bottlenecks \citep{q
     \label{eq:len_norm_lp}
 \end{equation}
 We marginalize over both language realizations of concept $C = (c_{\text{en}}, c_{\text{ko}})$ via log-sum-exp, deduplicating when surface numerals are identical ($c_{\text{en}}{=}c_{\text{ko}}$):
+{\footnotesize
 \begin{equation}
-\footnotesize
 \ell_{\text{concept}}(C \mid x) = \log\bigl(e^{\bar{\ell}(c_{\text{en}} \mid x)} + \mathbb{I}[c_{\text{en}} \neq c_{\text{ko}}]\,e^{\bar{\ell}(c_{\text{ko}} \mid x)}\bigr).
 \label{eq:concept_lp}
-\end{equation}
+\end{equation}%
+}
 The continuous margin toward truth $A_i$ is $\Delta\ell(x) = \ell_{\text{concept}}(A_i \mid x) - \ell_{\text{concept}}(B_i \mid x)$, yielding $y_{\text{lp}}(x) = A$ if $\Delta\ell(x) \ge 0$ and $B$ otherwise. Our primary combined decision $y(x)$ uses $y_{\text{text}}(x)$ when unambiguous ($A$ or $B$) and falls back to $y_{\text{lp}}(x)$ on hedged responses, while we also report $y_{\text{text}}$ and $y_{\text{lp}}$ separately.
 
 \subsection{Four-Regime Decomposition and Statistical Testing}
 \label{subsec:stats}
 
 For each matched counterbalanced pair $(x_{m,1}, x_{m,2})$ ($m \in \{1, \dots, M\}$, where $M{=}600$ total or $300$ per query language), $x_{m,1}$ represents $\text{Pair}_1$ ($[\text{EN}{=}A, \text{KO}{=}B]$) and $x_{m,2}$ represents $\text{Pair}_2$ ($[\text{KO}{=}A, \text{EN}{=}B]$) under identical $(\ell_q, o)$. The paired decision $\bigl(y(x_{m,1}), y(x_{m,2})\bigr) \in \{A, B\}^2$ falls into one of four behavioral regimes: (1) \textbf{English Flip ($A \to B$)}, $y(x_{m,1}){=}A, y(x_{m,2}){=}B$ (follows the English passage in both pairs); (2) \textbf{Korean Flip ($B \to A$)}, $y(x_{m,1}){=}B, y(x_{m,2}){=}A$ (follows the Korean passage in both pairs); (3) \textbf{Truth-Consistent ($A \to A$)}, $y(x_{m,1}){=}A, y(x_{m,2}){=}A$ (retains true claim $A$ in both pairs); and (4) \textbf{False-Consistent ($B \to B$)}, $y(x_{m,1}){=}B, y(x_{m,2}){=}B$ (selects counterfactual $B$ in both pairs). With regime counts $N_{A \to B} + N_{B \to A} + N_{A \to A} + N_{B \to B} = M$, the marginal \textbf{English Preference Rate ($\text{EPR}$)} across all $2M$ runs satisfies:
+{\footnotesize
 \begin{equation}
-\footnotesize
-\text{EPR} \!=\! \frac{N_{A \to B} + \tfrac{1}{2}(N_{A \to A} + N_{B \to B})}{M} \!=\! 0.5 + \frac{N_{A \to B} - N_{B \to A}}{2M}.
+\text{EPR}\!=\!\frac{N_{A{\to}B}{+}\tfrac{1}{2}(N_{A{\to}A}{+}N_{B{\to}B})}{M}\!=\!0.5{+}\frac{N_{A{\to}B}{-}N_{B{\to}A}}{2M}.
 \label{eq:epr_identity}
-\end{equation}
+\end{equation}%
+}
 Because $N_{A \to A}$ and $N_{B \to B}$ cancel out of $\text{EPR} - 0.5$, testing language neutrality ($H_0: \text{EPR} = 0.5$) while factoring out parametric truth consistency reduces to \textbf{McNemar's test} on discordant flips $(N_{A \to B}, N_{B \to A})$:
 \begin{equation}
     \chi^2_{\text{McNemar}} = \frac{\bigl(|N_{A \to B} - N_{B \to A}| - 1\bigr)^2}{N_{A \to B} + N_{B \to A}},

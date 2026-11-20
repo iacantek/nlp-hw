@@ -17,27 +17,27 @@ To guide the transition from this Homework~2 manuscript to the final Homework~3 
 \toprule
 \textbf{Affected Section} & \textbf{Identified Weakness in HW~2 Draft} & \textbf{Concrete Action Plan for Homework~3} & \textbf{Falsifiable Completion Criterion} \\
 \midrule
-\textbf{W1:} §\ref{subsec:models_baselines}, §\ref{subsec:main_results} &
+\textbf{W1:} \S\ref{subsec:models_baselines}, \S\ref{subsec:main_results} &
 \textbf{4-Bit NF4 Quantization and Single 7B--8B Scale Scope:} To execute all $4{,}200$ runs on a single 16 GB NVIDIA T4 GPU, both \texttt{Qwen-2.5-7B-Instruct} and \texttt{Llama-3.1-8B-Instruct} were evaluated under 4-bit NormalFloat (\textsc{nf4}) quantization at the 7B--8B parameter scale, leaving open whether low-bit quantization noise or model scale modulates cross-lingual conflict resolution. &
 Evaluate a stratified diagnostic subset under native 16-bit (FP16/BF16) precision and compare against a larger model scale (e.g., \texttt{Qwen-2.5-14B-Instruct} or \texttt{Llama-3.1-70B-Instruct}) to isolate quantization and scale effects on $\text{EPR}$ and $\text{TOR}$. &
-Report paired $\Delta\text{EPR}$ and McNemar $\chi^2$ comparisons between 4-bit NF4 and native 16-bit precision in §\ref{sec:analysis}. \\
+Report paired $\Delta\text{EPR}$ and McNemar $\chi^2$ comparisons between 4-bit NF4 and native 16-bit precision in \S\ref{sec:analysis}. \\
 \midrule
-\textbf{W2:} §\ref{subsec:rw_generator}, §\ref{subsec:protocol}, §\ref{subsec:ablation_order} &
-\textbf{Absence of Conflict-Aware and Position-Debiasing Mitigations:} The current draft diagnoses high Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$ and $\llamaPairTwoOverrideAll\%$) and a strong $D_2$ recency interaction (§\ref{subsec:ablation_order}), but does not test inference-time mitigations. &
+\textbf{W2:} \S\ref{subsec:rw_generator}, \S\ref{subsec:protocol}, \S\ref{subsec:ablation_order} &
+\textbf{Absence of Conflict-Aware and Position-Debiasing Mitigations:} The current draft diagnoses high Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$ and $\llamaPairTwoOverrideAll\%$) and a strong $D_2$ recency interaction (\S\ref{subsec:ablation_order}), but does not test inference-time mitigations. &
 Implement and evaluate two inference-time mitigations: (1) \emph{Language-Neutral Verification Prompting} (instructing the model to cross-check claims against parametric knowledge independently of passage language or position) and (2) \emph{Order-Averaged Logit Ensembling} across swapped $(D_1, D_2)$ orders. &
-Add a dedicated mitigation subsection and results table in §\ref{sec:analysis} reporting $\Delta\text{EPR}$ and $\Delta\text{TOR}$ for both interventions across all $600$ counterbalanced pairs per model. \\
+Add a dedicated mitigation subsection and results table in \S\ref{sec:analysis} reporting $\Delta\text{EPR}$ and $\Delta\text{TOR}$ for both interventions across all $600$ counterbalanced pairs per model. \\
 \midrule
-\textbf{W3:} §\ref{subsec:protocol}, §\ref{subsec:dataset} &
+\textbf{W3:} \S\ref{subsec:protocol}, \S\ref{subsec:dataset} &
 \textbf{Two-Document ($k{=}2$) Pairwise Contradiction Only:} Real-world mRAG pipelines typically retrieve $k \in \{3, 5\}$ passages where a single outdated English passage may conflict with a majority of two or more local-language Korean passages. &
 Extend the evaluation protocol with a \emph{Majority-Vote Conflict Ablation} ($k{=}3$: $1$ false English passage $d_{\text{en}}(B_i)$ vs.\ $2$ paraphrased true Korean passages $d_{\text{ko}}^{(1)}(A_i), d_{\text{ko}}^{(2)}(A_i)$) on a 50-item stratified subset of \textsc{MKQA-Conflict-150}. &
 Report exact Truth Override Rates comparing $1\text{ EN vs.\ }1\text{ KO}$ against $1\text{ EN vs.\ }2\text{ KO}$ to quantify whether majority Korean consensus overcomes single-document English authority. \\
 \midrule
-\textbf{W4:} §\ref{subsec:controls}, Table~\ref{tab:dataset_examples} &
+\textbf{W4:} \S\ref{subsec:controls}, Table~\ref{tab:dataset_examples} &
 \textbf{Single-Sentence Template Brevity vs.\ Multi-Sentence Passages:} While single-sentence templates strictly eliminate length and rhetorical confounders, authentic Wikipedia passages embed factual claims inside multi-sentence paragraphs. &
 Construct an expanded multi-sentence context condition by adding two neutral, non-conflicting background sentences around $T_{i,\text{en}}$ and $T_{i,\text{ko}}$ and test whether passage length modulates $\text{EPR}$. &
-Report paired $\text{EPR}$ and McNemar $\chi^2$ differences between single-sentence and three-sentence passages in §\ref{sec:analysis}. \\
+Report paired $\text{EPR}$ and McNemar $\chi^2$ differences between single-sentence and three-sentence passages in \S\ref{sec:analysis}. \\
 \midrule
-\textbf{W5:} §\ref{subsec:dataset}, §\ref{subsec:ablation_category} &
+\textbf{W5:} \S\ref{subsec:dataset}, \S\ref{subsec:ablation_category} &
 \textbf{Sino-Korean vs.\ Arabic Numeral Realization in Korean:} In \textsc{MKQA-Conflict-150}, $\textsc{Date}$ and $\textsc{Number}$ items use Arabic numerals in both languages, leaving untested how models behave when numbers are spelled out in Hangul (e.g., \ko{사}, \emph{sa} vs.\ \texttt{4}). &
 Add a spelled-out Hangul numeral sub-experiment on the 50 $\textsc{Number}$ items comparing Arabic digits against Hangul numeral strings. &
 Quantify the exact $\Delta\text{EPR}$ between Arabic-numeral Korean passages and Hangul-spelled Korean passages on the $\textsc{Number}$ category. \\
@@ -55,7 +55,7 @@ Quantify the exact $\Delta\text{EPR}$ between Arabic-numeral Korean passages and
 
 In accordance with the course policy on transparent scientific reporting, we document all uses of generative AI tools across Homework~1 and Homework~2, distinguishing automated assistance from manual author verification:
 \begin{itemize}
-    \item \textbf{Literature Exploration and Related Work Synthesis (\texttt{NotebookLM}, \texttt{Gemini}):} During Homework~1 and Homework~2, \texttt{NotebookLM} and \texttt{Gemini} were used to summarize the five core reference papers \citep{ki2025linguistic,li2025language,park2025investigating,qi2025consistency,wang2026languages} and extract candidate secondary citations from their bibliographies. \emph{Author Verification:} Every citation key, venue, page range, and quantitative claim in §\ref{sec:related_work} and the bibliography was cross-checked directly against the original published PDFs. No unverified or fabricated citations are included.
+    \item \textbf{Literature Exploration and Related Work Synthesis (\texttt{NotebookLM}, \texttt{Gemini}):} During Homework~1 and Homework~2, \texttt{NotebookLM} and \texttt{Gemini} were used to summarize the five core reference papers \citep{ki2025linguistic,li2025language,park2025investigating,qi2025consistency,wang2026languages} and extract candidate secondary citations from their bibliographies. \emph{Author Verification:} Every citation key, venue, page range, and quantitative claim in \S\ref{sec:related_work} and the bibliography was cross-checked directly against the original published PDFs. No unverified or fabricated citations are included.
     \item \textbf{Benchmark Construction and Korean Morphosyntax (\texttt{Antigravity}):} We used the \texttt{Antigravity} coding assistant to implement the deterministic filtering pipeline that extracts 150 aligned English--Korean QA pairs from the official Apple MKQA release \citep{longpre2021mkqa} and resolves Unicode Hangul codas (\emph{batchim}) and Sino-Korean numeral postpositions. \emph{Author Verification:} We verified $100\%$ of the MKQA example identifiers and parallel queries against the official MKQA release and validated all particle resolutions and extraction rules across $1{,}800$ automated unit-test assertions.
     \item \textbf{Experimental Pipeline and Manuscript Drafting (\texttt{Antigravity}):} \texttt{Antigravity} assisted in implementing the dual exact-extraction and teacher-forced concept log-probability evaluation suite, the Google Colab execution notebook, and the LaTeX tables and TikZ figures. \emph{Author Verification:} The author reviewed all mathematical derivations (Equations~\ref{eq:pairs}--\ref{eq:mcnemar}), audited the randomly sampled qualitative examples ($\text{seed}{=}42$), and verified the Revision Plan.
 \end{itemize}

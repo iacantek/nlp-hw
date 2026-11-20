@@ -27,17 +27,11 @@
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{graphicx}
+\usepackage{pict2e}
 \usepackage{CJKutf8}
-\usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
 
-% Korean Hangul helper macro (renders UTF-8 Hangul via TeX Live CJKutf8 'mj' font)
-\newcommand{\ko}[1]{\begin{CJK}{UTF8}{mj}#1\end{CJK}}
-
-% Quotes
-\usepackage{csquotes}
+% Korean Hangul helper macro (renders UTF-8 Hangul via a single document-wide CJKutf8 'mj' environment to avoid 136x per-pass file reloads on Overleaf)
+\newcommand{\ko}[1]{#1}
 
 % Auto-generated experimental results macros
 \input{tex/00_results_macros}
@@ -50,6 +44,7 @@
 }
 
 \begin{document}
+\begin{CJK}{UTF8}{mj}
 \maketitle
 
 \input{tex/00_abstract}
@@ -68,4 +63,6 @@
 
 \input{tex/99_appendix}
 
+\clearpage
+\end{CJK}
 \end{document}
