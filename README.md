@@ -48,7 +48,7 @@ nlp-hw/
 
 All experimental results and main/ablation tables reported in the paper (**Table 2**: main results and baselines; **Table 3**: prior-knowledge ablation; **Table 4**: answer-category ablation; **Table 5**: passage-order ablation; and **Table 6**: qualitative examples sampled with `--seed 42`) are reproduced end-to-end by running [`src/colab_runner.ipynb`](src/colab_runner.ipynb):
 
-1. **Open the Notebook:** Go to [Google Colab](https://colab.research.google.com/), select **File → Open notebook → GitHub**, enter `https://github.com/iacantek/nlp-hw` (branch `feat/hw-2`), and open `src/colab_runner.ipynb` (or upload `src/colab_runner.ipynb` directly).
+1. **Open the Notebook:** Go to [Google Colab](https://colab.research.google.com/), select **File → Open notebook → GitHub**, enter `https://github.com/iacantek/nlp-hw`, and open `src/colab_runner.ipynb` (or upload `src/colab_runner.ipynb` directly).
 2. **Select the T4 GPU Runtime:** Click **Runtime → Change runtime type**, set **Hardware accelerator** to **T4 GPU**, and click **Save**.
 3. **Optional `HF_TOKEN` Setup:** To use the gated `meta-llama/Llama-3.1-8B-Instruct` repository, add `HF_TOKEN` under Colab **Secrets** (key icon in the left sidebar) and enable notebook access. If omitted, the runner automatically uses the open mirror `unsloth/Meta-Llama-3.1-8B-Instruct`.
 4. **Execute All Cells:** Click **Runtime → Run all**. The notebook clones the repository into `nlp-hw/`, installs dependencies via `nlp-hw/requirements.txt`, runs the test suite (`pytest nlp-hw/src/tests/test_pipeline.py -v`), executes the full GPU evaluation for both models with deterministic seed `--seed 42`:
