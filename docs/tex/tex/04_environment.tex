@@ -1,0 +1,199 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.88}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+& & \multicolumn{3}{c}{\textbf{\texttt{Qwen-2.5-7B-Instruct}}} & \multicolumn{3}{c}{\textbf{\texttt{Llama-3.1-8B-Instruct}}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+\textbf{Evaluation Condition / Metric} & \textbf{Target / Role} & \textbf{EN Query} & \textbf{KO Query} & \textbf{All} & \textbf{EN Query} & \textbf{KO Query} & \textbf{All} \\
+\midrule
+\multicolumn{8}{@{}l}{\textbf{Panel A: Closed-Book Prior \& Monolingual Conflict Baselines}} \\
+Closed-Book Exact Accuracy (\%) & Parametric recall & \qwenCBAccEN & \qwenCBAccKO & 45.0 & \llamaCBAccEN & \llamaCBAccKO & 42.0 \\
+Closed-Book Language Consistency (\%) & $\ell_{\text{out}} = \ell_q$ & \qwenCBLcEN & \qwenCBLcKO & 93.3 & \llamaCBLcEN & \llamaCBLcKO & 96.0 \\
+Monolingual Conflict Factual Acc.\ (\%) & Truth retention & \qwenMonoAccEN & \qwenMonoAccKO & \qwenMonoAccAll & \llamaMonoAccEN & \llamaMonoAccKO & \llamaMonoAccAll \\
+Monolingual False Override Rate (\%) & Baseline override & \qwenMonoOverrideEN & \qwenMonoOverrideKO & \qwenMonoOverrideAll & \llamaMonoOverrideEN & \llamaMonoOverrideKO & \llamaMonoOverrideAll \\
+Monolingual First-Doc Preference (\%) & Position sensitivity & \qwenMonoFirstDocEN & \qwenMonoFirstDocKO & \qwenMonoFirstDocAll & \llamaMonoFirstDocEN & \llamaMonoFirstDocKO & \llamaMonoFirstDocAll \\
+\midrule
+\multicolumn{8}{@{}l}{\textbf{Panel B: Counterbalanced Cross-Lingual Conflict ($M=300$ pairs per query language; $600$ pairs total)}} \\
+\textbf{English Preference Rate, EPR (\%)} & Neutral $= 50.0$ & \textbf{\qwenEPREN} & \textbf{\qwenEPRKO} & \textbf{\qwenEPRAll} & \textbf{\llamaEPREN} & \textbf{\llamaEPRKO} & \textbf{\llamaEPRAll} \\
+\quad 95\% Wilson Confidence Interval & Uncertainty & [\qwenEPRCILowEN, \qwenEPRCIHighEN] & [\qwenEPRCILowKO, \qwenEPRCIHighKO] & [\qwenEPRCILowAll, \qwenEPRCIHighAll] & [\llamaEPRCILowEN, \llamaEPRCIHighEN] & [\llamaEPRCILowKO, \llamaEPRCIHighKO] & [\llamaEPRCILowAll, \llamaEPRCIHighAll] \\
+\quad EPR via Concept Log-Prob $y_{\text{lp}}$ (\%) & Continuous check & \qwenEPRLPEN & \qwenEPRLPKO & \qwenEPRLPAll & \llamaEPRLPEN & \llamaEPRLPKO & \llamaEPRLPAll \\
+\quad EPR via Unambiguous Text $y_{\text{text}}$ (\%) & Discrete check & \qwenEPRTxtEN & \qwenEPRTxtKO & \qwenEPRTxtAll & \llamaEPRTxtEN & \llamaEPRTxtKO & \llamaEPRTxtAll \\
+\midrule
+\textbf{Four-Regime Counterbalanced Breakdown:} & & & & & & & \\
+\quad English-Following Flip $A \to B$ (\%) & Follows EN doc & \textbf{\qwenFlipABRateEN} & \textbf{\qwenFlipABRateKO} & \textbf{\qwenFlipABRateAll} & \textbf{\llamaFlipABRateEN} & \textbf{\llamaFlipABRateKO} & \textbf{\llamaFlipABRateAll} \\
+\quad Korean-Following Flip $B \to A$ (\%) & Follows KO doc & \qwenFlipBARateEN & \qwenFlipBARateKO & \qwenFlipBARateAll & \llamaFlipBARateEN & \llamaFlipBARateKO & \llamaFlipBARateAll \\
+\quad Truth-Consistent $A \to A$ (\%) & Follows Truth $A$ & \qwenTruthAARateEN & \qwenTruthAARateKO & \qwenTruthAARateAll & \llamaTruthAARateEN & \llamaTruthAARateKO & \llamaTruthAARateAll \\
+\quad False-Consistent $B \to B$ (\%) & Follows False $B$ & \qwenFalseBBRateEN & \qwenFalseBBRateKO & \qwenFalseBBRateAll & \llamaFalseBBRateEN & \llamaFalseBBRateKO & \llamaFalseBBRateAll \\
+\midrule
+\textbf{Hypothesis Test \& Factual Reliability Metrics:} & & & & & & & \\
+\quad Conditional EN Flip $\frac{N_{A\to B}}{N_{A\to B}+N_{B\to A}}$ (\%) & Discordant skew & \qwenCondENFlipEN & \qwenCondENFlipKO & \qwenCondENFlipAll & \llamaCondENFlipEN & \llamaCondENFlipKO & \llamaCondENFlipAll \\
+\quad McNemar's $\chi^2$ ($p$-value) & $H_0: N_{A\to B}{=}N_{B\to A}$ & \qwenMcNemarChiEN\,$^*$ & \qwenMcNemarChiKO\,$^*$ & \qwenMcNemarChiAll\,$^*$ & \llamaMcNemarChiEN\,$^*$ & \llamaMcNemarChiKO\,$^*$ & \llamaMcNemarChiAll\,$^*$ \\
+\quad $\text{Pair}_1$ Accuracy ($[\text{EN}{=}A, \text{KO}{=}B]$, \%) & EN is True & \qwenPairOneAccEN & \qwenPairOneAccKO & \qwenPairOneAccAll & \llamaPairOneAccEN & \llamaPairOneAccKO & \llamaPairOneAccAll \\
+\quad \textbf{$\text{Pair}_2$ Truth Override Rate, TOR (\%)} & \textbf{EN is False ($B$)} & \textbf{\qwenPairTwoOverrideEN} & \textbf{\qwenPairTwoOverrideKO} & \textbf{\qwenPairTwoOverrideAll} & \textbf{\llamaPairTwoOverrideEN} & \textbf{\llamaPairTwoOverrideKO} & \textbf{\llamaPairTwoOverrideAll} \\
+\quad Overall Cross-Lingual Factual Acc.\ (\%) & Across $\text{Pair}_{1,2}$ & \qwenFactAccEN & \qwenFactAccKO & \qwenFactAccAll & \llamaFactAccEN & \llamaFactAccKO & \llamaFactAccAll \\
+\quad Paired Log-Prob Shift $\Delta\ell$ (nats) & $\tfrac{1}{2}(\Delta\ell(\text{P}_1) - \Delta\ell(\text{P}_2))$ & +\qwenLPShiftMeanEN & +\qwenLPShiftMeanKO & +\qwenLPShiftMeanAll & +\llamaLPShiftMeanEN & +\llamaLPShiftMeanKO & +\llamaLPShiftMeanAll \\
+\quad First-Document Preference Rate (\%) & Order sensitivity & \qwenFirstDocEN & \qwenFirstDocKO & \qwenFirstDocAll & \llamaFirstDocEN & \llamaFirstDocKO & \llamaFirstDocAll \\
+\quad Abstention / Hedging Rate (\%) & Mentions both/none & \qwenAbstainEN & \qwenAbstainKO & \qwenAbstainAll & \llamaAbstainEN & \llamaAbstainKO & \llamaAbstainAll \\
+\quad Output Language Consistency, LC (\%) & $\ell_{\text{out}} = \ell_q$ & \qwenLCEN & \qwenLCKO & \qwenLCAll & \llamaLCEN & \llamaLCKO & \llamaLCAll \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Main experimental results on \textsc{MKQA-Conflict-150} ($2{,}100$ GPU runs/model). Panel~A reports the Closed-Book Prior and Monolingual Translated-Context Conflict baselines. Panel~B reports counterbalanced cross-lingual conflict metrics across English queries ($M{=}300$ pairs), Korean queries ($M{=}300$ pairs), and combined ($M{=}600$ pairs). $^*$All McNemar $\chi^2$ statistics and paired $t$-tests on $\Delta\ell$ are significant at $p < 0.0001$.}
+\label{tab:main_results}
+\end{table*}
+
+\subsection{Benchmark Construction: \textsc{MKQA-Conflict-150}}
+\label{subsec:dataset}
+
+We construct \textsc{MKQA-Conflict-150} from the Multilingual Knowledge Questions and Answers (MKQA) benchmark \citep{longpre2021mkqa}, which provides human-translated parallel queries and aligned entity answers derived from Natural Questions \citep{kwiatkowski2019natural}. To prevent cultural perspective, temporal drift, or multi-answer ambiguity from confounding conflict resolution, we filter the 10,000 MKQA examples using four criteria: (1) a single, verifiable, time-invariant ground-truth answer in both English and Korean; (2) culturally neutral subject matter (natural sciences, world geography, pre-21st-century history, or mathematics), excluding geopolitically disputed queries \citep{li2024bordirlines}; (3) for named entities, Latin script in English and Hangul in Korean without substring overlap; and (4) for dates and numbers, exact Arabic numerals. From this pool, we deterministically select $N{=}150$ items balanced across three categories ($50~\textsc{Entity}$, $50~\textsc{Date}$, $50~\textsc{Number}$; Table~\ref{tab:dataset_examples}), pairing ground-truth $A_i$ with a type-matched counterfactual $B_i$ verified to ensure $100\%$ boundary-extraction precision across all 600 surface strings.
+
+\subsection{Models, Baselines, and Implementation}
+\label{subsec:models_baselines}\label{subsec:implementation}
+
+We evaluate two open-weight instruction-tuned multilingual LLMs at the 7B--8B scale: (1) \textbf{\texttt{Qwen/Qwen2.5-7B-Instruct}} \citep{yang2024qwen25}, pretrained on 18T tokens with strong East Asian representation; and (2) \textbf{\texttt{meta-llama/Llama-3.1-8B-Instruct}} \citep{grattafiori2024llama3}, pretrained on 15T predominantly English tokens within the Llama family known to rely on latent English representations \citep{wendler2024llamas}. Cross-lingual conflict ($8$ runs/item) is compared against two baselines: (1) \textbf{Closed-Book Parametric Prior ($2$ runs/item; $300$/model)} and (2) \textbf{Monolingual Translated-Context Conflict ($4$ runs/item; $600$/model)}, which adapts the monolingual and translated-context reference baseline principle ($\ell_q = \ell_d$) of \citet{park2025investigating} and \citet{ki2025linguistic} to our conflict setting across $A$-first and $B$-first orders. Totaling $14$ prompts/item ($2{,}100$ runs and $M{=}600$ counterbalanced pairs per model; $4{,}200$ runs overall), all evaluations are executed on an NVIDIA T4 GPU (16 GB VRAM) using 4-bit NormalFloat (\textsc{nf4}) quantization, batched greedy decoding ($\tau{=}0.0$, up to $12$ new tokens, batch size $16$), and batched teacher-forced scoring ($\text{seed}{=}42$).\footnote{Code and data: \url{https://github.com/iacantek/nlp-hw}.}
+
+\subsection{Main Experimental Results}
+\label{subsec:main_results}
+
+Table~\ref{tab:main_results} presents the primary empirical results across both models, and Figure~\ref{fig:regime_breakdown} visualizes the four-regime counterbalanced breakdown.
+
+\paragraph{Baseline Performance (Panel A).}
+In closed-book probing, both models show higher parametric recall in English than in Korean: \texttt{Qwen-2.5-7B} achieves \qwenCBAccEN\% in English versus \qwenCBAccKO\% in Korean ($20.6$-point gap; $45.0\%$ overall), while \texttt{Llama-3.1-8B} achieves \llamaCBAccEN\% versus \llamaCBAccKO\% ($28.0$-point gap; $42.0\%$ overall). Stratifying items yields $\qwenKnownBothN$ $\textsc{Known-Both}$, $\qwenKnownENOnlyN$ $\textsc{Known-EN-Only}$, $\qwenKnownKOOnlyN$ $\textsc{Known-KO-Only}$, and $\qwenUnknownBothN$ $\textsc{Unknown-Both}$ for Qwen ($\llamaKnownBothN, \llamaKnownENOnlyN, \llamaKnownKOOnlyN, \llamaUnknownBothN$ for Llama). In the Monolingual Conflict Baseline, factual accuracy is \qwenMonoAccAll\% (Qwen) and \llamaMonoAccAll\% (Llama), with baseline false override rates of \qwenMonoOverrideAll\% and \llamaMonoOverrideAll\%.
+
+\begin{figure}[t]
+\centering
+{%
+\setlength{\fboxsep}{2pt}\setlength{\fboxrule}{0.4pt}%
+\providecommand{\legswatch}[2]{%
+  \raisebox{-0.6pt}{\textcolor{#2}{\rlap{\rule{6.5pt}{5.2pt}}}\hspace{0.45pt}\raisebox{0.45pt}{\textcolor{#1}{\rule{5.6pt}{4.3pt}}}\hspace{0.45pt}}%
+}%
+\scriptsize
+\fcolorbox{black!40}{white}{%
+  \begin{tabular}{@{}l@{\hspace{6pt}}l@{}}
+    \legswatch{red!65}{red!80!black}\;EN Flip ($A{\to}B$) &
+    \legswatch{green!55!teal!65}{teal!80!black}\;Truth ($A{\to}A$) \\
+    \legswatch{blue!55}{blue!80!black}\;KO Flip ($B{\to}A$) &
+    \legswatch{gray!50}{black!60}\;False ($B{\to}B$)
+  \end{tabular}%
+}\\[3pt]%
+\setlength{\unitlength}{0.56pt}%
+\providecommand{\regimeseg}[3]{%
+  \hbox{\textcolor{#2}{\rlap{\rule{14.5pt}{#3\unitlength}}}%
+    \hspace{0.45pt}\raisebox{0.45pt}{\textcolor{#1}{\rule{13.6pt}{\dimexpr#3\unitlength-0.9pt\relax}}}\hspace{0.45pt}}%
+}%
+\providecommand{\regimebar}[5]{%
+  \put(#1,18){\makebox(0,0)[b]{%
+    \vbox{\offinterlineskip
+      \regimeseg{gray!50}{black!60}{#5}%
+      \regimeseg{blue!55}{blue!80!black}{#4}%
+      \regimeseg{green!55!teal!65}{teal!80!black}{#3}%
+      \regimeseg{red!65}{red!80!black}{#2}%
+    }%
+  }}%
+}%
+\begin{picture}(390,124)(0,0)
+  % Horizontal dashed grid lines at 20, 40, 60, 80%
+  {\color{gray!35}\linethickness{0.4pt}%
+    \multiput(64,38)(8,0){40}{\Line(0,0)(4,0)}%
+    \multiput(64,58)(8,0){40}{\Line(0,0)(4,0)}%
+    \multiput(64,78)(8,0){40}{\Line(0,0)(4,0)}%
+    \multiput(64,98)(8,0){40}{\Line(0,0)(4,0)}%
+  }%
+  % Stacked bars from live results macros
+  \regimebar{104}{\qwenFlipABRateEN}{\qwenTruthAARateEN}{\qwenFlipBARateEN}{\qwenFalseBBRateEN}%
+  \regimebar{184}{\qwenFlipABRateKO}{\qwenTruthAARateKO}{\qwenFlipBARateKO}{\qwenFalseBBRateKO}%
+  \regimebar{264}{\llamaFlipABRateEN}{\llamaTruthAARateEN}{\llamaFlipBARateEN}{\llamaFalseBBRateEN}%
+  \regimebar{344}{\llamaFlipABRateKO}{\llamaTruthAARateKO}{\llamaFlipBARateKO}{\llamaFalseBBRateKO}%
+  % Plot frame and tick marks
+  {\color{black!85}\linethickness{0.45pt}%
+    \Line(64,18)(386,18)\Line(64,118)(386,118)%
+    \Line(64,18)(64,118)\Line(386,18)(386,118)%
+    \multiput(64,18)(0,20){6}{\Line(0,0)(4,0)}%
+    \multiput(382,18)(0,20){6}{\Line(0,0)(4,0)}%
+    \multiput(104,18)(80,0){4}{\Line(0,0)(0,3.5)}%
+  }%
+  % Y-axis tick labels
+  \put(59,18){\makebox(0,0)[r]{\scriptsize 0}}%
+  \put(59,38){\makebox(0,0)[r]{\scriptsize 20}}%
+  \put(59,58){\makebox(0,0)[r]{\scriptsize 40}}%
+  \put(59,78){\makebox(0,0)[r]{\scriptsize 60}}%
+  \put(59,98){\makebox(0,0)[r]{\scriptsize 80}}%
+  \put(59,118){\makebox(0,0)[r]{\scriptsize 100}}%
+  % Rotated Y-axis title
+  \put(12,68){\makebox(0,0){\rotatebox{90}{\footnotesize Paired Runs (\%)}}}%
+  % X-axis labels
+  \put(104,6){\makebox(0,0){\scriptsize Qwen-EN}}%
+  \put(184,6){\makebox(0,0){\scriptsize Qwen-KO}}%
+  \put(264,6){\makebox(0,0){\scriptsize Llama-EN}}%
+  \put(344,6){\makebox(0,0){\scriptsize Llama-KO}}%
+\end{picture}%
+}
+\caption{Four-regime decomposition of counterbalanced pairs ($M{=}300$ per bar). English-following flips ($A \to B$) outnumber Korean-following flips ($B \to A$) by $2.1\times$ to $4.4\times$ across all conditions.}
+\label{fig:regime_breakdown}
+\end{figure}
+
+\paragraph{Cross-Lingual Conflict Resolution (Panel B).}
+Introducing cross-lingual conflict triggers a highly significant shift toward the English document. Overall $\text{EPR}$ reaches \textbf{\qwenEPRAll\%} ($95\%$ CI: $[\qwenEPRCILowAll\%, \qwenEPRCIHighAll\%]$, $\chi^2_{\text{McNemar}}{=}\qwenMcNemarChiAll, p \qwenMcNemarPAll$) for \texttt{Qwen-2.5-7B} and \textbf{\llamaEPRAll\%} ($95\%$ CI: $[\llamaEPRCILowAll\%, \llamaEPRCIHighAll\%]$, $\chi^2_{\text{McNemar}}{=}\llamaMcNemarChiAll, p \llamaMcNemarPAll$) for \texttt{Llama-3.1-8B}. Across all $600$ pairs, Qwen flips with English ($A \to B$) in \qwenFlipABRateAll\% ($\qwenFlipABNAll/600$) versus Korean ($B \to A$) in only \qwenFlipBARateAll\% ($\qwenFlipBANAll/600$, conditional EN flip \qwenCondENFlipAll\%), retaining truth ($A \to A$) in \qwenTruthAARateAll\%. Llama flips with English in \llamaFlipABRateAll\% ($\llamaFlipABNAll/600$) versus \llamaFlipBARateAll\% ($\llamaFlipBANAll/600$, conditional EN flip \llamaCondENFlipAll\%), retaining truth in \llamaTruthAARateAll\%.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.88}
+\begin{minipage}[t]{0.485\textwidth}
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+\textbf{Model} & \textbf{Prior Stratum} & $\boldsymbol{N_{\text{items}}}$ & \textbf{EPR\textsubscript{EN}} & \textbf{EPR\textsubscript{KO}} & \textbf{EPR\textsubscript{All}} & \textbf{TOR} \\
+\midrule
+\multirow{5}{*}{Qwen-2.5}
+ & \textsc{Known-Both}    & \qwenKnownBothN   & \qwenPKKnownBothEPREN   & \qwenPKKnownBothEPRKO   & \qwenPKKnownBothEPRAll   & \qwenPKKnownBothOverrideAll \\
+ & \textsc{Known-EN-Only} & \qwenKnownENOnlyN & \qwenPKKnownENOnlyEPREN & \qwenPKKnownENOnlyEPRKO & \textbf{\qwenPKKnownENOnlyEPRAll} & \qwenPKKnownENOnlyOverrideAll \\
+ & \textsc{Known-KO-Only} & \qwenKnownKOOnlyN & \qwenPKKnownKOOnlyEPREN & \qwenPKKnownKOOnlyEPRKO & \qwenPKKnownKOOnlyEPRAll & \qwenPKKnownKOOnlyOverrideAll \\
+ & \textsc{Unknown-Both}  & \qwenUnknownBothN  & \qwenPKUnknownBothEPREN  & \qwenPKUnknownBothEPRKO  & \qwenPKUnknownBothEPRAll  & \textbf{\qwenPKUnknownBothOverrideAll} \\
+ & \textsc{Any-Known}     & 91                & \qwenPKAnyKnownEPREN     & \qwenPKAnyKnownEPRKO     & \qwenPKAnyKnownEPRAll     & \qwenPKAnyKnownOverrideAll \\
+\midrule
+\multirow{5}{*}{Llama-3.1}
+ & \textsc{Known-Both}    & \llamaKnownBothN   & \llamaPKKnownBothEPREN   & \llamaPKKnownBothEPRKO   & \llamaPKKnownBothEPRAll   & \llamaPKKnownBothOverrideAll \\
+ & \textsc{Known-EN-Only} & \llamaKnownENOnlyN & \llamaPKKnownENOnlyEPREN & \llamaPKKnownENOnlyEPRKO & \textbf{\llamaPKKnownENOnlyEPRAll} & \llamaPKKnownENOnlyOverrideAll \\
+ & \textsc{Known-KO-Only} & \llamaKnownKOOnlyN & \llamaPKKnownKOOnlyEPREN & \llamaPKKnownKOOnlyEPRKO & \llamaPKKnownKOOnlyEPRAll & \llamaPKKnownKOOnlyOverrideAll \\
+ & \textsc{Unknown-Both}  & \llamaUnknownBothN  & \llamaPKUnknownBothEPREN  & \llamaPKUnknownBothEPRKO  & \llamaPKUnknownBothEPRAll  & \textbf{\llamaPKUnknownBothOverrideAll} \\
+ & \textsc{Any-Known}     & 91                & \llamaPKAnyKnownEPREN     & \llamaPKAnyKnownEPRKO     & \llamaPKAnyKnownEPRAll     & \llamaPKAnyKnownOverrideAll \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Ablation by closed-book parametric prior knowledge strata ($N{=}150$ items). $\text{TOR}$ is the $\text{Pair}_2$ Truth Override Rate (\%).}
+\label{tab:ablation_prior}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+\textbf{Model} & \textbf{Category} & \textbf{EPR\textsubscript{EN}} & \textbf{EPR\textsubscript{KO}} & \textbf{EPR\textsubscript{All}} & $\boldsymbol{A{\to}B}$ & \textbf{LC\textsubscript{KO}} \\
+\midrule
+\multirow{3}{*}{Qwen-2.5}
+ & \textsc{Entity} & \qwenCatEntityEPREN & \qwenCatEntityEPRKO & \qwenCatEntityEPRAll & \qwenCatEntityFlipABAll & \qwenCatEntityLCKO \\
+ & \textsc{Date}   & \qwenCatDateEPREN   & \qwenCatDateEPRKO   & \textbf{\qwenCatDateEPRAll}   & \textbf{\qwenCatDateFlipABAll}   & \qwenCatDateLCKO \\
+ & \textsc{Number} & \qwenCatNumberEPREN & \qwenCatNumberEPRKO & \qwenCatNumberEPRAll & \qwenCatNumberFlipABAll & \qwenCatNumberLCKO \\
+\midrule
+\multirow{3}{*}{Llama-3.1}
+ & \textsc{Entity} & \llamaCatEntityEPREN & \llamaCatEntityEPRKO & \llamaCatEntityEPRAll & \llamaCatEntityFlipABAll & \llamaCatEntityLCKO \\
+ & \textsc{Date}   & \llamaCatDateEPREN   & \llamaCatDateEPRKO   & \textbf{\llamaCatDateEPRAll}   & \textbf{\llamaCatDateFlipABAll}   & \llamaCatDateLCKO \\
+ & \textsc{Number} & \llamaCatNumberEPREN & \llamaCatNumberEPRKO & \llamaCatNumberEPRAll & \llamaCatNumberFlipABAll & \llamaCatNumberLCKO \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Ablation across answer categories ($50$ items / $200$ pairs each). $\textsc{Entity}$ contrasts Latin vs.\ Hangul, while $\textsc{Date}$ and $\textsc{Number}$ share Arabic numerals. $\text{LC}_{\text{KO}}$ is Korean-query language consistency (\%).}
+\label{tab:ablation_category}
+\end{minipage}
+\end{table*}
+
+Testing $\mathcal{H}_{\text{EN}}$ against $\mathcal{H}_{\text{QL}}$ on Korean queries ($\ell_q{=}\text{ko}$) shows that querying in Korean reduces marginal $\text{EPR}$ by $5.3$ points in Qwen (\qwenEPREN\% $\to$ \qwenEPRKO\%) and lowers the conditional English flip rate among discordant pairs in both models (\qwenCondENFlipEN\% $\to$ \qwenCondENFlipKO\% in Qwen; \llamaCondENFlipEN\% $\to$ \llamaCondENFlipKO\% in Llama). In Llama, marginal $\text{EPR}$ remains invariant (\llamaEPREN\% vs.\ \llamaEPRKO\%) because Korean queries reduce $A \to A$ truth retention (\llamaTruthAARateEN\% $\to$ \llamaTruthAARateKO\%) and increase bidirectional flipping. In both models, $\text{EPR}_{\text{KO}}$ remains above $60\%$ ($p < 0.0001$), refuting a reversal under $\mathcal{H}_{\text{QL}}$. Consequently, whereas $\text{Pair}_1$ ($[\text{EN}{=}A, \text{KO}{=}B]$) achieves \qwenPairOneAccAll\% (Qwen) and \llamaPairOneAccAll\% (Llama) accuracy, $\text{Pair}_2$ ($[\text{KO}{=}A, \text{EN}{=}B]$) suffers a Truth Override Rate ($\text{TOR}$) of \textbf{\qwenPairTwoOverrideAll\%} and \textbf{\llamaPairTwoOverrideAll\%}---exceeding the monolingual conflict override rate by $+17.3$ and $+12.7$ points and more than doubling the $\text{Pair}_1$ error rate ($21.8\%$ and $22.2\%$).
