@@ -37,17 +37,15 @@ Monolingual First-Doc Preference (\%) & Position sensitivity & \qwenMonoFirstDoc
 \quad $\text{Pair}_1$ Accuracy ($[\text{EN}{=}A, \text{KO}{=}B]$, \%) & EN is True & \qwenPairOneAccEN & \qwenPairOneAccKO & \qwenPairOneAccAll & \llamaPairOneAccEN & \llamaPairOneAccKO & \llamaPairOneAccAll \\
 \quad \textbf{$\text{Pair}_2$ Truth Override Rate, TOR (\%)} & \textbf{EN is False ($B$)} & \textbf{\qwenPairTwoOverrideEN} & \textbf{\qwenPairTwoOverrideKO} & \textbf{\qwenPairTwoOverrideAll} & \textbf{\llamaPairTwoOverrideEN} & \textbf{\llamaPairTwoOverrideKO} & \textbf{\llamaPairTwoOverrideAll} \\
 \quad Overall Cross-Lingual Factual Acc.\ (\%) & Across $\text{Pair}_{1,2}$ & \qwenFactAccEN & \qwenFactAccKO & \qwenFactAccAll & \llamaFactAccEN & \llamaFactAccKO & \llamaFactAccAll \\
-\quad Paired Log-Prob Shift $\Delta\ell$ (nats) & $\Delta\ell(\text{P}_1) - \Delta\ell(\text{P}_2)$ & +\qwenLPShiftMeanEN & +\qwenLPShiftMeanKO & +\qwenLPShiftMeanAll & +\llamaLPShiftMeanEN & +\llamaLPShiftMeanKO & +\llamaLPShiftMeanAll \\
+\quad Paired Log-Prob Shift $\Delta\ell$ (nats) & $\tfrac{1}{2}(\Delta\ell(\text{P}_1) - \Delta\ell(\text{P}_2))$ & +\qwenLPShiftMeanEN & +\qwenLPShiftMeanKO & +\qwenLPShiftMeanAll & +\llamaLPShiftMeanEN & +\llamaLPShiftMeanKO & +\llamaLPShiftMeanAll \\
 \quad First-Document Preference Rate (\%) & Order sensitivity & \qwenFirstDocEN & \qwenFirstDocKO & \qwenFirstDocAll & \llamaFirstDocEN & \llamaFirstDocKO & \llamaFirstDocAll \\
 \quad Abstention / Hedging Rate (\%) & Mentions both/none & \qwenAbstainEN & \qwenAbstainKO & \qwenAbstainAll & \llamaAbstainEN & \llamaAbstainKO & \llamaAbstainAll \\
 \quad Output Language Consistency, LC (\%) & $\ell_{\text{out}} = \ell_q$ & \qwenLCEN & \qwenLCKO & \qwenLCAll & \llamaLCEN & \llamaLCKO & \llamaLCAll \\
 \bottomrule
 \end{tabular}%
 }
-\vspace{-4pt}
 \caption{Main experimental results on \textsc{MKQA-Conflict-150} ($2{,}100$ GPU runs/model). Panel~A reports the Closed-Book Prior and Monolingual Translated-Context Conflict baselines. Panel~B reports counterbalanced cross-lingual conflict metrics across English queries ($M{=}300$ pairs), Korean queries ($M{=}300$ pairs), and combined ($M{=}600$ pairs). $^*$All McNemar $\chi^2$ statistics and paired $t$-tests on $\Delta\ell$ are significant at $p < 0.0001$.}
 \label{tab:main_results}
-\vspace{-6pt}
 \end{table*}
 
 \subsection{Benchmark Construction: \textsc{MKQA-Conflict-150}}
@@ -136,10 +134,8 @@ In closed-book probing, both models show higher parametric recall in English tha
   \put(344,6){\makebox(0,0){\scriptsize Llama-KO}}%
 \end{picture}%
 }
-\vspace{-7pt}
 \caption{Four-regime decomposition of counterbalanced pairs ($M{=}300$ per bar). English-following flips ($A \to B$) outnumber Korean-following flips ($B \to A$) by $2.1\times$ to $4.4\times$ across all conditions.}
 \label{fig:regime_breakdown}
-\vspace{-6pt}
 \end{figure}
 
 \paragraph{Cross-Lingual Conflict Resolution (Panel B).}
@@ -159,20 +155,19 @@ Introducing cross-lingual conflict triggers a highly significant shift toward th
 \multirow{5}{*}{Qwen-2.5}
  & \textsc{Known-Both}    & \qwenKnownBothN   & \qwenPKKnownBothEPREN   & \qwenPKKnownBothEPRKO   & \qwenPKKnownBothEPRAll   & \qwenPKKnownBothOverrideAll \\
  & \textsc{Known-EN-Only} & \qwenKnownENOnlyN & \qwenPKKnownENOnlyEPREN & \qwenPKKnownENOnlyEPRKO & \textbf{\qwenPKKnownENOnlyEPRAll} & \qwenPKKnownENOnlyOverrideAll \\
- & \textsc{Known-KO-Only} & \qwenKnownKOOnlyN & 66.7 & 52.8 & 59.7 & 52.8 \\
+ & \textsc{Known-KO-Only} & \qwenKnownKOOnlyN & \qwenPKKnownKOOnlyEPREN & \qwenPKKnownKOOnlyEPRKO & \qwenPKKnownKOOnlyEPRAll & \qwenPKKnownKOOnlyOverrideAll \\
  & \textsc{Unknown-Both}  & \qwenUnknownBothN  & \qwenPKUnknownBothEPREN  & \qwenPKUnknownBothEPRKO  & \qwenPKUnknownBothEPRAll  & \textbf{\qwenPKUnknownBothOverrideAll} \\
  & \textsc{Any-Known}     & 91                & \qwenPKAnyKnownEPREN     & \qwenPKAnyKnownEPRKO     & \qwenPKAnyKnownEPRAll     & \qwenPKAnyKnownOverrideAll \\
 \midrule
 \multirow{5}{*}{Llama-3.1}
  & \textsc{Known-Both}    & \llamaKnownBothN   & \llamaPKKnownBothEPREN   & \llamaPKKnownBothEPRKO   & \llamaPKKnownBothEPRAll   & \llamaPKKnownBothOverrideAll \\
  & \textsc{Known-EN-Only} & \llamaKnownENOnlyN & \llamaPKKnownENOnlyEPREN & \llamaPKKnownENOnlyEPRKO & \textbf{\llamaPKKnownENOnlyEPRAll} & \llamaPKKnownENOnlyOverrideAll \\
- & \textsc{Known-KO-Only} & \llamaKnownKOOnlyN & 53.6 & 57.1 & 55.4 & 50.0 \\
+ & \textsc{Known-KO-Only} & \llamaKnownKOOnlyN & \llamaPKKnownKOOnlyEPREN & \llamaPKKnownKOOnlyEPRKO & \llamaPKKnownKOOnlyEPRAll & \llamaPKKnownKOOnlyOverrideAll \\
  & \textsc{Unknown-Both}  & \llamaUnknownBothN  & \llamaPKUnknownBothEPREN  & \llamaPKUnknownBothEPRKO  & \llamaPKUnknownBothEPRAll  & \textbf{\llamaPKUnknownBothOverrideAll} \\
  & \textsc{Any-Known}     & 91                & \llamaPKAnyKnownEPREN     & \llamaPKAnyKnownEPRKO     & \llamaPKAnyKnownEPRAll     & \llamaPKAnyKnownOverrideAll \\
 \bottomrule
 \end{tabular}%
 }
-\vspace{-4pt}
 \caption{Ablation by closed-book parametric prior knowledge strata ($N{=}150$ items). $\text{TOR}$ is the $\text{Pair}_2$ Truth Override Rate (\%).}
 \label{tab:ablation_prior}
 \end{minipage}%
@@ -196,11 +191,9 @@ Introducing cross-lingual conflict triggers a highly significant shift toward th
 \bottomrule
 \end{tabular}%
 }
-\vspace{-4pt}
 \caption{Ablation across answer categories ($50$ items / $200$ pairs each). $\textsc{Entity}$ contrasts Latin vs.\ Hangul, while $\textsc{Date}$ and $\textsc{Number}$ share Arabic numerals. $\text{LC}_{\text{KO}}$ is Korean-query language consistency (\%).}
 \label{tab:ablation_category}
 \end{minipage}
-\vspace{-6pt}
 \end{table*}
 
 Testing $\mathcal{H}_{\text{EN}}$ against $\mathcal{H}_{\text{QL}}$ on Korean queries ($\ell_q{=}\text{ko}$) shows that querying in Korean reduces marginal $\text{EPR}$ by $5.3$ points in Qwen (\qwenEPREN\% $\to$ \qwenEPRKO\%) and lowers the conditional English flip rate among discordant pairs in both models (\qwenCondENFlipEN\% $\to$ \qwenCondENFlipKO\% in Qwen; \llamaCondENFlipEN\% $\to$ \llamaCondENFlipKO\% in Llama). In Llama, marginal $\text{EPR}$ remains invariant (\llamaEPREN\% vs.\ \llamaEPRKO\%) because Korean queries reduce $A \to A$ truth retention (\llamaTruthAARateEN\% $\to$ \llamaTruthAARateKO\%) and increase bidirectional flipping. In both models, $\text{EPR}_{\text{KO}}$ remains above $60\%$ ($p < 0.0001$), refuting a reversal under $\mathcal{H}_{\text{QL}}$. Consequently, whereas $\text{Pair}_1$ ($[\text{EN}{=}A, \text{KO}{=}B]$) achieves \qwenPairOneAccAll\% (Qwen) and \llamaPairOneAccAll\% (Llama) accuracy, $\text{Pair}_2$ ($[\text{KO}{=}A, \text{EN}{=}B]$) suffers a Truth Override Rate ($\text{TOR}$) of \textbf{\qwenPairTwoOverrideAll\%} and \textbf{\llamaPairTwoOverrideAll\%}---exceeding the monolingual conflict override rate by $+17.3$ and $+12.7$ points and more than doubling the $\text{Pair}_1$ error rate ($21.8\%$ and $22.2\%$).

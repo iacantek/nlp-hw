@@ -46,7 +46,7 @@ We query each model on $q_i(\text{en})$ and $q_i(\text{ko})$ without context ($2
 \toprule
 \textbf{Cat.} & \textbf{ID} & \textbf{Parallel Query $q_i(\text{en})$ / $q_i(\text{ko})$} & \textbf{True $A_i$ vs.\ False $B_i$} & \textbf{Declarative Templates $T_{i,\text{en}}(c_{\text{en}})$ / $T_{i,\text{ko}}(c_{\text{ko}})$} \\
 \midrule
-\textsc{Entity} & 5 &
+\textsc{Entity} & 4 &
 \textbf{EN:} who is the richest person to ever live\newline
 \textbf{KO:} \ko{역사상 가장 부자는 누구인가요} \emph{(yeoksasang gajang buja-neun nugu-ingayo)} &
 $A$: \texttt{Mansa Musa} / \ko{만사 무사} \emph{(mansa musa)}\newline
@@ -54,34 +54,32 @@ $B$: \texttt{Augustus Caesar} / \ko{아우구스투스 카이사르} \emph{(augu
 \textbf{EN:} Historians regard \texttt{\{entity\}} as the richest person to have ever lived.\newline
 \textbf{KO:} \ko{역사학자들은 역사상 가장 부유했던 인물로} \texttt{\{entity\}\{\ko{을/를}\}} \ko{꼽는다.} \emph{(yeoksahakjadeul-eun yeoksasang gajang buyuhaetdeon inmul-lo \{entity\}\{eul/reul\} kkomneunda.)} \\
 \midrule
-\textsc{Date} & 52 &
+\textsc{Date} & 51 &
 \textbf{EN:} when did persia change its name to iran\newline
 \textbf{KO:} \ko{언제 페르시아가 이름을 이란으로 바꿨나요} \emph{(eonje pereusia-ga ireum-eul iran-euro bakkwonnayo)} &
 $A$: \texttt{1935} / \texttt{1935}\newline
 $B$: \texttt{1925} / \texttt{1925} (Shared Arabic numerals) &
 \textbf{EN:} Persia officially changed its international name to Iran in \texttt{\{entity\}}.\newline
-\textbf{KO:} \ko{페르시아가 국호를 이란으로 공식 변경한 해는} \texttt{\{entity\}}\ko{년이다.} \emph{(pereusia-ga gukho-reul iran-euro gongsik byeongyeonghan hae-neun \{entity\}-nyeon-ida.)} \\
+\textbf{KO:} \ko{페르시아가 공식적으로 국호를 이란으로 변경한 해는} \texttt{\{entity\}}\ko{년이다.} \emph{(pereusia-ga gongsikjeog-euro gukho-reul iran-euro byeongyeonghan hae-neun \{entity\}-nyeon-ida.)} \\
 \midrule
-\textsc{Number} & 101 &
-\textbf{EN:} how many chambers does a human heart have\newline
-\textbf{KO:} \ko{인간의 심장에는 몇 개의 방이 있나요} \emph{(ingan-ui simjang-eneun myeot gae-ui bang-i innayo)} &
-$A$: \texttt{4} / \texttt{4}\newline
-$B$: \texttt{3} / \texttt{3} (Shared Arabic numerals) &
-\textbf{EN:} A normal human heart consists of \texttt{\{entity\}} distinct chambers.\newline
-\textbf{KO:} \ko{정상적인 인간의 심장은} \texttt{\{entity\}}\ko{개의 방으로 이루어져 있다.} \emph{(jeongsangjeog-in ingan-ui simjang-eun \{entity\}-gae-ui bang-euro irueojyeo itda.)} \\
+\textsc{Number} & 105 &
+\textbf{EN:} how many bones does a human being have in their body\newline
+\textbf{KO:} \ko{인간의 몸에 몇 개의 뼈가 있나요} \emph{(ingan-ui mom-e myeot gae-ui ppyeo-ga innayo)} &
+$A$: \texttt{206} / \texttt{206}\newline
+$B$: \texttt{214} / \texttt{214} (Shared Arabic numerals) &
+\textbf{EN:} An adult human skeleton consists of \texttt{\{entity\}} bones.\newline
+\textbf{KO:} \ko{성인 인체를 구성하는 뼈의 총개수는} \texttt{\{entity\}}\ko{개이다.} \emph{(seong-in inche-reul guseonghaneun ppyeo-ui chonggaesu-neun \{entity\}-gae-ida.)} \\
 \bottomrule
 \end{tabular}%
 }
-\vspace{-4pt}
-\caption{Representative items from the three balanced categories of \textsc{MKQA-Conflict-150} ($\textsc{Entity}$, $\textsc{Date}$, $\textsc{Number}$, $50$ items each). In Item~5, vowel- or consonant-final Korean entities automatically select the matching object particle via \texttt{\{\ko{을/를}\}} (\emph{eul/reul}).}
+\caption{Representative items from the three balanced categories of \textsc{MKQA-Conflict-150} ($\textsc{Entity}$, $\textsc{Date}$, $\textsc{Number}$, $50$ items each). In Item~4, vowel- or consonant-final Korean entities automatically select the matching object particle via \texttt{\{\ko{을/를}\}} (\emph{eul/reul}).}
 \label{tab:dataset_examples}
-\vspace{-6pt}
 \end{table*}
 
 \subsection{Dual Scoring: Exact Extraction and Concept Log-Probabilities}
 \label{subsec:scoring}
 
-To avoid conflating comprehension with free-form generation bottlenecks \citep{qi2025consistency} while still capturing surface script drift, we score every run $x$ using two complementary modalities. \textbf{Discrete Text Extraction ($y_{\text{text}}$):} We decode up to 12 new tokens greedily ($\tau{=}0.0$). To avoid false numeric matches (e.g., matching claim ``1'' inside ``Document 1''), our extractor strips document headers (\texttt{Document 1/2}, \texttt{\ko{문서} 1/2}) and applies strict non-digit boundary regex \texttt{(?<!\textbackslash d)c(?!\textbackslash d)} for numerals and case-normalized matching for entities, labeling responses as $A$, $B$, or \texttt{abstain} (if both or neither claim appears). \textbf{Concept-Level Log-Probabilities ($y_{\text{lp}}$):} In a single batched teacher-forced pass, we compute the length-normalized log-probability of each candidate surface string $s \in \{a_{i,\text{en}}, a_{i,\text{ko}}, b_{i,\text{en}}, b_{i,\text{ko}}\}$ tokenized as $s = (t_1, \dots, t_{|s|})$ following prompt $x$:
+To avoid conflating comprehension with free-form generation bottlenecks \citep{qi2025consistency} while still capturing surface script drift, we score every run $x$ using two complementary modalities (full hyperparameters and verbatim prompt templates are provided in Appendix~\ref{sec:appendix_hyperparams}). \textbf{Discrete Text Extraction ($y_{\text{text}}$):} We decode up to 12 new tokens greedily ($\tau{=}0.0$). To avoid false numeric matches (e.g., matching claim ``1'' inside ``Document 1''), our extractor strips document headers (\texttt{Document 1/2}, \texttt{\ko{문서} 1/2}) and applies strict non-digit boundary regex \texttt{(?<!\textbackslash d)c(?!\textbackslash d)} for numerals and case-normalized matching for entities, labeling responses as $A$, $B$, or \texttt{abstain} (if both or neither claim appears). \textbf{Concept-Level Log-Probabilities ($y_{\text{lp}}$):} In a single batched teacher-forced pass, we compute the length-normalized log-probability of each candidate surface string $s \in \{a_{i,\text{en}}, a_{i,\text{ko}}, b_{i,\text{en}}, b_{i,\text{ko}}\}$ tokenized as $s = (t_1, \dots, t_{|s|})$ following prompt $x$:
 \begin{equation}
     \bar{\ell}(s \mid x) = \frac{1}{|s|} \sum_{k=1}^{|s|} \log P_\theta(t_k \mid x, t_{<k}).
     \label{eq:len_norm_lp}
@@ -110,4 +108,4 @@ Because $N_{A \to A}$ and $N_{B \to B}$ cancel out of $\text{EPR} - 0.5$, testin
     \chi^2_{\text{McNemar}} = \frac{\bigl(|N_{A \to B} - N_{B \to A}| - 1\bigr)^2}{N_{A \to B} + N_{B \to A}},
     \label{eq:mcnemar}
 \end{equation}
-paired with an exact binomial test on $N_{A \to B} \sim \text{Binomial}(N_{A \to B} + N_{B \to A}, 0.5)$. On the continuous scale, we test the paired \textbf{Log-Probability Shift} $\Delta\ell_m = \Delta\ell(x_{m,1}) - \Delta\ell(x_{m,2})$ via a paired $t$-test and Wilcoxon signed-rank test, alongside the \textbf{$\text{Pair}_2$ Truth Override Rate ($\text{TOR}$)} and \textbf{Language Consistency ($\text{LC}$)}.
+paired with an exact binomial test on $N_{A \to B} \sim \text{Binomial}(N_{A \to B} + N_{B \to A}, 0.5)$. On the continuous scale, we test the paired \textbf{Log-Probability Shift} $\Delta\ell_m = \tfrac{1}{2}\bigl(\Delta\ell(x_{m,1}) - \Delta\ell(x_{m,2})\bigr)$ via a paired $t$-test and Wilcoxon signed-rank test, alongside the \textbf{$\text{Pair}_2$ Truth Override Rate ($\text{TOR}$)} and \textbf{Language Consistency ($\text{LC}$)}.

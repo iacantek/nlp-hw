@@ -46,43 +46,13 @@ nlp-hw/
 
 ## Running on Google Colab (T4 GPU)
 
-The full GPU experiment is packaged in [`src/colab_runner.ipynb`](src/colab_runner.ipynb):
+All experimental results and main/ablation tables reported in the paper (**Table 2**: main results and baselines; **Table 3**: prior-knowledge ablation; **Table 4**: answer-category ablation; **Table 5**: passage-order ablation; and **Table 6**: qualitative examples sampled with `--seed 42`) are reproduced end-to-end by running [`src/colab_runner.ipynb`](src/colab_runner.ipynb):
 
 1. **Open the Notebook:** Go to [Google Colab](https://colab.research.google.com/), select **File → Open notebook → GitHub**, enter `https://github.com/iacantek/nlp-hw` (branch `feat/hw-2`), and open `src/colab_runner.ipynb` (or upload `src/colab_runner.ipynb` directly).
 2. **Select the T4 GPU Runtime:** Click **Runtime → Change runtime type**, set **Hardware accelerator** to **T4 GPU**, and click **Save**.
 3. **Optional `HF_TOKEN` Setup:** To use the gated `meta-llama/Llama-3.1-8B-Instruct` repository, add `HF_TOKEN` under Colab **Secrets** (key icon in the left sidebar) and enable notebook access. If omitted, the runner automatically uses the open mirror `unsloth/Meta-Llama-3.1-8B-Instruct`.
-4. **Execute All Cells:** Click **Runtime → Run all**. The notebook clones the repository into `nlp-hw/`, installs dependencies via `nlp-hw/requirements.txt`, runs the test suite, evaluates both models with incremental checkpointing in `nlp-hw/results/`, updates `nlp-hw/docs/tex/tex/00_results_macros.tex`, and downloads `results_bundle.zip`.
-
-## Local Quickstart & Updating the LaTeX Manuscript
-
-### 1. Local Installation & Verification
-
-```bash
-git clone https://github.com/iacantek/nlp-hw.git
-cd nlp-hw
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Rebuild and validate the 150-item MKQA Cross-Lingual Conflict dataset
-python3 -m src.build_dataset
-
-# Run the complete unit and stress test suite
-pytest -v
-```
-
-### 2. Updating the Paper from `results_bundle.zip`
-
-After downloading `results_bundle.zip` from Google Colab, extract `results/experiment_results.json` into the local repository and run:
-
-```bash
-# Export concrete experiment numbers into docs/tex/tex/00_results_macros.tex
-python3 -m src.export_tex --results results/experiment_results.json
-
-# Compile the ACL manuscript PDF
-cd docs/tex
-pdflatex -interaction=nonstopmode acl_latex.tex
-bibtex acl_latex
-pdflatex -interaction=nonstopmode acl_latex.tex
-pdflatex -interaction=nonstopmode acl_latex.tex
-```
+4. **Execute All Cells:** Click **Runtime → Run all**. The notebook clones the repository into `nlp-hw/`, installs dependencies via `nlp-hw/requirements.txt`, runs the test suite (`pytest nlp-hw/src/tests/test_pipeline.py -v`), executes the full GPU evaluation for both models with deterministic seed `--seed 42`:
+   ```bash
+   python3 nlp-hw/src/run_experiment.py --backend hf --models qwen llama --quantization 4bit --batch-size 16 --max-new-tokens 12 --seed 42 --output-dir nlp-hw/results --resume --export-latex
+   ```
+   and packages all run logs (`nlp-hw/results/runs_*.jsonl`), aggregated statistics for every paper table (`nlp-hw/results/experiment_results.json`), and auto-generated LaTeX macros (`nlp-hw/docs/tex/tex/00_results_macros.tex`) into `results_bundle.zip`.

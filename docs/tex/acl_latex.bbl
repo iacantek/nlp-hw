@@ -16,7 +16,8 @@ Chen Amiraz, Yaroslav Fyodorov, Elad Haramaty, Zohar Karnin, and Liane
   Hajishirzi}]{asai2021xor}
 Akari Asai, Jungo Kasai, Jonathan Clark, Kenton Lee, Eunsol Choi, and Hannaneh
   Hajishirzi. 2021{\natexlab{a}}.
-\newblock {XOR QA}: Cross-lingual open-retrieval question answering.
+\newblock \href {https://doi.org/10.18653/v1/2021.naacl-main.46} {{XOR QA}:
+  Cross-lingual open-retrieval question answering}.
 \newblock In \emph{Proceedings of the 2021 Conference of the North American
   Chapter of the Association for Computational Linguistics: Human Language
   Technologies}, pages 547--564, Online. Association for Computational
@@ -36,8 +37,10 @@ Akari Asai, Shayne Longpre, Jungo Kasai, Chia-Hsuan Lee, Rui Zhang, Junjie Hu,
 \bibitem[{Asai et~al.(2021{\natexlab{b}})Asai, Yu, Kasai, and
   Hajishirzi}]{asai2021one}
 Akari Asai, Xinyan Yu, Jungo Kasai, and Hanna Hajishirzi. 2021{\natexlab{b}}.
-\newblock One question answering model for many languages with cross-lingual
-  dense passage retrieval.
+\newblock \href
+  {https://proceedings.neurips.cc/paper/2021/hash/3df07fda884bf6b56ed481e4f6b2e5e2-Abstract.html}
+  {One question answering model for many languages with cross-lingual dense
+  passage retrieval}.
 \newblock In \emph{Advances in Neural Information Processing Systems},
   volume~34, pages 7547--7560.
 
@@ -62,7 +65,8 @@ Nadezhda Chirkova, David Rau, Herv{\'e} D{\'e}jean, Thibault Formal,
 
 \bibitem[{Fierro and S{\o}gaard(2022)}]{fierro2022factual}
 Constanza Fierro and Anders S{\o}gaard. 2022.
-\newblock Factual consistency of multilingual pretrained language models.
+\newblock \href {https://doi.org/10.18653/v1/2022.findings-acl.240} {Factual
+  consistency of multilingual pretrained language models}.
 \newblock In \emph{Findings of the Association for Computational Linguistics:
   ACL 2022}, pages 3046--3052, Dublin, Ireland. Association for Computational
   Linguistics.
@@ -102,7 +106,8 @@ Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur
   Parikh, Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin,
   Kenton Lee, Kristina Toutanova, Llion Jones, Matthew Kelcey, Ming-Wei Chang,
   Andrew~M. Dai, Jakob Uszkoreit, Quoc Le, and Slav Petrov. 2019.
-\newblock Natural questions: A benchmark for question answering research.
+\newblock \href {https://doi.org/10.1162/tacl_a_00276} {Natural questions: A
+  benchmark for question answering research}.
 \newblock \emph{Transactions of the Association for Computational Linguistics},
   7:452--466.
 
@@ -112,7 +117,9 @@ Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur
 Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
   Karpukhin, Naman Goyal, Heinrich K{\"u}ttler, Mike Lewis, Wen-tau Yih, Tim
   Rockt{\"a}schel, Sebastian Riedel, and Douwe Kiela. 2020.
-\newblock Retrieval-augmented generation for knowledge-intensive {NLP} tasks.
+\newblock \href
+  {https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html}
+  {Retrieval-augmented generation for knowledge-intensive {NLP} tasks}.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, volume~33, pages 9459--9474. Curran Associates Inc.
 
@@ -127,8 +134,8 @@ Bo~Li, Zhenghua Xu, and Rui Xie. 2025{\natexlab{a}}.
   Callison-Burch}]{li2024bordirlines}
 Bryan Li, Samar Haider, Fiona Luo, Adwait Agashe, and Chris Callison-Burch.
   2024.
-\newblock {BordIRLines}: A dataset for evaluating cross-lingual retrieval
-  augmented generation.
+\newblock \href {https://doi.org/10.18653/v1/2024.wikinlp-1.1} {{BordIRLines}:
+  A dataset for evaluating cross-lingual retrieval augmented generation}.
 \newblock In \emph{Proceedings of the First Workshop on Advancing Natural
   Language Processing for Wikipedia}, pages 1--13, Miami, Florida, USA.
   Association for Computational Linguistics.
@@ -166,8 +173,9 @@ Wei Liu, Sony Trenous, Leonardo F.~R. Ribeiro, Bill Byrne, and Felix Hieber.
 
 \bibitem[{Longpre et~al.(2021)Longpre, Lu, and Daiber}]{longpre2021mkqa}
 Shayne Longpre, Yi~Lu, and Joachim Daiber. 2021.
-\newblock {MKQA}: A linguistically diverse benchmark for multilingual open
-  domain question answering.
+\newblock \href {https://doi.org/10.1162/tacl_a_00433} {{MKQA}: A
+  linguistically diverse benchmark for multilingual open domain question
+  answering}.
 \newblock \emph{Transactions of the Association for Computational Linguistics},
   9:1389--1406.
 
@@ -181,8 +189,9 @@ Jeonghyun Park and Hwanhee Lee. 2025.
 
 \bibitem[{Qi et~al.(2023)Qi, Fern{\'a}ndez, and Bisazza}]{qi2023crosslingual}
 Jirui Qi, Raquel Fern{\'a}ndez, and Arianna Bisazza. 2023.
-\newblock Cross-lingual consistency of factual knowledge in multilingual
-  language models.
+\newblock \href {https://doi.org/10.18653/v1/2023.emnlp-main.658}
+  {Cross-lingual consistency of factual knowledge in multilingual language
+  models}.
 \newblock In \emph{Proceedings of the 2023 Conference on Empirical Methods in
   Natural Language Processing}, pages 10650--10666, Singapore. Association for
   Computational Linguistics.

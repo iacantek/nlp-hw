@@ -179,6 +179,7 @@ def generate_latex_macros(summary: dict[str, Any]) -> str:
         for s_key, s_tag in [
             ("known_both", "KnownBoth"),
             ("known_en_only", "KnownENOnly"),
+            ("known_ko_only", "KnownKOOnly"),
             ("unknown_both", "UnknownBoth"),
             ("any_known", "AnyKnown"),
         ]:

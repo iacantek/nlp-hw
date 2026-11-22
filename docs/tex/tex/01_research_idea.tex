@@ -84,10 +84,8 @@ Isolating document-language bias during conflict resolution is challenging becau
 \end{picture}%
 }%
 }
-\vspace{-6pt}
 \caption{Overview of our counterbalanced cross-lingual conflict protocol. Each item pairs ground-truth claim $A$ against a type-matched counterfactual $B$ across swapped language assignments ($\text{Pair}_1$ vs.\ $\text{Pair}_2$), two query languages ($\text{EN}$, $\text{KO}$), and two passage orders, isolating English flips ($A \to B$) and Korean flips ($B \to A$) from truth retention ($A \to A$).}
 \label{fig:protocol}
-\vspace{-8pt}
 \end{figure*}
 
 Prior mRAG studies have not isolated how generators resolve direct cross-lingual factual contradictions: existing work examines \emph{retrieval and reranking} bias \citep{park2025investigating,wang2026languages}, \emph{distractor-based} context utilization where non-gold passages lack an answer \citep{qi2025consistency}, \emph{decoding-time language drift} under non-conflicting evidence \citep{li2025language}, or \emph{in-line citation selection} (\texttt{[1]}--\texttt{[9]}) over parallel or complementary documents without testing which claim the generator believes under contradiction \citep{ki2025linguistic}.
