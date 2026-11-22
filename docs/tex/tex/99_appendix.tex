@@ -1,0 +1,114 @@
+\bibliography{custom}
+
+\clearpage
+\appendix
+
+\section{Revision Plan for Homework 3}
+\label{sec:appendix_revision}
+
+To guide the transition from this Homework~2 manuscript to the final Homework~3 submission, we critically audit our current draft across methodology, empirical scope, and analysis. Table~\ref{tab:revision_plan} details three specific weaknesses identified in our current draft, the exact sections affected, our concrete action plan for Homework~3, and falsifiable completion criteria.
+
+\begin{table*}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{1.8cm}p{3.4cm}p{5.5cm}p{4.3cm}@{}}
+\toprule
+\textbf{Affected Section} & \textbf{Identified Weakness in HW~2 Draft} & \textbf{Concrete Action Plan for Homework~3} & \textbf{Falsifiable Completion Criterion} \\
+\midrule
+\textbf{W1:} \S\ref{subsec:models_baselines}, \S\ref{subsec:main_results} &
+\textbf{4-Bit NF4 Quantization and Single 7B--8B Scale Scope:} To execute all $4{,}200$ runs on a single 16 GB NVIDIA T4 GPU, both \texttt{Qwen-2.5-7B-Instruct} and \texttt{Llama-3.1-8B-Instruct} were evaluated under 4-bit NormalFloat (\textsc{nf4}) quantization at the 7B--8B parameter scale, leaving open whether low-bit quantization noise or model scale modulates cross-lingual conflict resolution. &
+Evaluate a stratified diagnostic subset under native 16-bit (FP16) precision and compare across model scales within the same families (e.g., \texttt{Qwen-2.5-3B/14B-Instruct} and \texttt{Llama-3.2-3B-Instruct}) to isolate quantization and scale effects on $\text{EPR}$ and $\text{TOR}$. &
+Report paired $\Delta\text{EPR}$ and McNemar $\chi^2$ comparisons across precision and scale settings in \S\ref{sec:analysis}. \\
+\midrule
+\textbf{W2:} \S\ref{subsec:rw_generator}, \S\ref{subsec:protocol}, \S\ref{subsec:ablation_order} &
+\textbf{Absence of Conflict-Aware and Position-Debiasing Mitigations:} The current draft diagnoses high Truth Override Rates ($\text{TOR} = \qwenPairTwoOverrideAll\%$ and $\llamaPairTwoOverrideAll\%$) and a strong $D_2$ recency interaction (\S\ref{subsec:ablation_order}), but does not test inference-time mitigations. &
+Implement and evaluate two inference-time mitigations: (1) \emph{Language-Neutral Verification Prompting} (instructing the model to cross-check claims against parametric knowledge independently of passage language or position) and (2) \emph{Order-Averaged Logit Ensembling} across swapped $(D_1, D_2)$ orders. &
+Add a dedicated mitigation subsection and results table in \S\ref{sec:analysis} reporting $\Delta\text{EPR}$ and $\Delta\text{TOR}$ for both interventions across all $600$ counterbalanced pairs per model. \\
+\midrule
+\textbf{W3:} \S\ref{subsec:protocol}, \S\ref{subsec:dataset} &
+\textbf{Two-Document ($k{=}2$) Pairwise Contradiction Only:} Real-world mRAG pipelines typically retrieve $k \in \{3, 5\}$ passages where a single outdated English passage may conflict with a majority of two or more local-language Korean passages. &
+Extend the evaluation protocol with a \emph{Majority-Vote Conflict Ablation} ($k{=}3$: $1$ false English passage $d_{\text{en}}(B_i)$ vs.\ $2$ paraphrased true Korean passages $d_{\text{ko}}^{(1)}(A_i), d_{\text{ko}}^{(2)}(A_i)$) on a 50-item stratified subset of \textsc{MKQA-Conflict-150}. &
+Report exact Truth Override Rates comparing $1\text{ EN vs.\ }1\text{ KO}$ against $1\text{ EN vs.\ }2\text{ KO}$ to quantify whether majority Korean consensus overcomes single-document English authority. \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Structured Revision Plan for Homework~3 detailing three specific weaknesses in the current draft, affected sections, actionable experimental extensions, and falsifiable completion criteria.}
+\label{tab:revision_plan}
+\end{table*}
+
+\section{AI Usage Disclosure}
+\label{sec:appendix_ai}
+
+In accordance with the course policy on transparent scientific reporting, we document all uses of generative AI tools across the development of this paper, specifying for each stage the model used, what it did, representative prompts, and what the author verified manually:
+\begin{itemize}
+    \item \textbf{Literature Search and Related Work Synthesis (\texttt{Gemini 4}, \texttt{NotebookLM}):} \texttt{Gemini 4} was used to gather relevant literature for this paper across multilingual retrieval-augmented generation, cross-lingual factual consistency, and knowledge conflict resolution (e.g., prompt: \emph{``Find peer-reviewed ACL, EMNLP, NAACL, and TACL papers on language preference, cross-lingual factual consistency, and knowledge conflicts in multilingual RAG''}). \texttt{NotebookLM} was used across all referenced papers involved in this study to summarize methodologies, compare experimental designs, and cross-reference findings across the literature (e.g., prompt: \emph{``Compare the experimental baselines, evaluation metrics, and findings regarding generator language preference across the uploaded papers''}). \emph{Author Verification:} Every citation entry, venue, publication year, page range, and quantitative claim in \S\ref{sec:intro}, \S\ref{sec:related_work}, and the bibliography was manually cross-checked by the author directly against the original published PDFs. No unverified or fabricated citations are included.
+    \item \textbf{Benchmark Construction, Coding, and Experimental Pipeline (\texttt{Antigravity} using \texttt{Gemini 4}):} We used the \texttt{Antigravity} coding assistant (powered by \texttt{Gemini 4}) for code assistance and debugging to implement the deterministic MKQA filtering pipeline (\textsc{MKQA-Conflict-150}), the Unicode Hangul coda (\emph{batchim}) and Sino-Korean numeral postposition resolver, the dual exact-extraction and teacher-forced concept log-probability evaluation suite, the Google Colab execution notebook, and the LaTeX tables and vector figures (e.g., prompt: \emph{``Implement a deterministic Korean particle resolver using Unicode Hangul syllable decomposition and Sino-Korean numeral coda rules with unit tests''}). \emph{Author Verification:} The author manually verified $100\%$ of the 150 MKQA identifiers, parallel templates, and counterfactual pairs against the official Apple MKQA release \citep{longpre2021mkqa}, validated all particle resolutions and extraction rules across $1{,}800+$ automated unit-test assertions, executed the full $4{,}200$-run evaluation on Google Colab, and audited all statistical outputs and randomly sampled qualitative examples ($\text{seed}{=}42$).
+    \item \textbf{Scientific Writing and Language Editing (\texttt{Antigravity} using \texttt{Gemini 4}):} The main text of the paper was written by the author himself and only improved for scientific writing, academic phrasing, and conciseness by \texttt{Antigravity} (using \texttt{Gemini 4}; e.g., prompt: \emph{``Improve the academic phrasing, clarity, and conciseness of my drafted section in ACL style while strictly preserving all scientific claims, mathematical definitions, and empirical numbers''}). \emph{Author Verification:} The author reviewed and verified every sentence of the manuscript to ensure that all scientific arguments, mathematical derivations (Equations~\ref{eq:pairs}--\ref{eq:mcnemar}), empirical interpretations, and the Revision Plan accurately reflect the author's own work and experimental results.
+\end{itemize}
+
+\section{Hyperparameters and Prompt Templates}
+\label{sec:appendix_hyperparams}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{0.94}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}p{2.5cm}p{4.8cm}@{}}
+\toprule
+\textbf{Parameter / Component} & \textbf{Specification} \\
+\midrule
+Benchmark Dataset & \textsc{MKQA-Conflict-150} ($150$ items; $50$ per cat.) \\
+Runs per Item / Total & $14$ runs/item $\implies 2{,}100$ runs/model ($4{,}200$ total) \\
+Counterbalanced Pairs & $M = 600$ pairs/model ($300$ EN, $300$ KO query) \\
+Models Evaluated & \texttt{Qwen/Qwen2.5-7B-Instruct} (7.6B); \texttt{meta-llama/Llama-3.1-8B-Instruct} (8.0B) \\
+Target GPU Hardware & Google Colab NVIDIA T4 (16 GB GDDR6 VRAM) \\
+Quantization Config & 4-bit NF4 (\texttt{bitsandbytes}), double quant, FP16 \\
+Decoding Config & Greedy ($\tau = 0.0$, \texttt{do\_sample=False}), \texttt{max\_new\_tokens=12}, \texttt{batch\_size=16} \\
+Candidate Scoring & Batched teacher-forced length-normalized $\ell_{\text{concept}}$ \\
+Random Seed & \texttt{seed = 42} (dataset, qualitative sample, evaluation) \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Summary of experimental hyperparameters and evaluation settings.}
+\label{tab:hyperparams}
+\end{table}
+
+Table~\ref{tab:hyperparams} lists all model, quantization, decoding, and scoring hyperparameters used across our experiments. Below we provide the verbatim system and user prompt templates (accompanied by Revised Romanization transliterations and English glosses for Korean prompts), where candidate options \texttt{(\{opt1\} or \{opt2\})} are ordered to match \texttt{Document 1} then \texttt{Document 2}:
+
+\paragraph{1. Cross-Lingual \& Monolingual Conflict Prompt ($\ell_q = \text{en}$):}
+\begin{quote}
+\scriptsize\ttfamily
+\textbf{[System]} You are a factual question-answering assistant. Answer the question with ONLY the exact entity, year, or number. Do not explain or mention conflicting sources.\\[2pt]
+\textbf{[User]} Document 1: \{doc1\}\\
+Document 2: \{doc2\}\\[2pt]
+Question: \{query\_en\}?\\
+Based on the documents above, select the single correct answer (\{opt1\} or \{opt2\}) and output ONLY the answer:\\
+Answer:
+\end{quote}
+
+\paragraph{2. Cross-Lingual \& Monolingual Conflict Prompt ($\ell_q = \text{ko}$):}
+\begin{quote}
+\scriptsize\ttfamily
+\textbf{[System]} \ko{당신은 사실 기반 질의응답 도우미입니다. 질문에 대해 부연 설명이나 문서 간 모순에 대한 언급 없이 오직 정답 개체명, 연도, 또는 숫자만 간결하게 답하세요.}\\
+\normalfont\scriptsize\emph{(Dangsin-eun sasil giban jirui-eungdap doumi-imnida. Jilmun-e daehae buyeon seolmyeong-ina munseo gan mosun-e daehan eongeup eopsi ojik jeongdap gaechemyeong, yeondo, ttoneun sutja-man gangyeolhage daphaseyo. / ``You are a fact-based QA assistant. Answer the question concisely with only the correct entity, year, or number, without additional explanation or mention of contradictions between documents.'')}\\[2pt]
+\ttfamily
+\textbf{[User]} \ko{문서} 1: \{doc1\}\\
+\ko{문서} 2: \{doc2\}\\[2pt]
+\ko{질문}: \{query\_ko\}?\\
+\ko{위 문서들을 바탕으로 올바른 정답 하나}(\{opt1\} \ko{또는} \{opt2\})\ko{를 선택하여 오직 정답만 출력하세요}:\\
+\ko{정답}:\\
+\normalfont\scriptsize\emph{(Munseo 1/2; Jilmun; Wi munseodeul-eul batang-euro olbareun jeongdap hana (\{opt1\} ttoneun \{opt2\})-reul seontaekhayeo ojik jeongdap-man chullyeokhaseyo; Jeongdap: ``Document 1/2; Question; Based on the documents above, select the single correct answer (\{opt1\} or \{opt2\}) and output only the answer; Answer:'')}
+\end{quote}
+
+\paragraph{3. Closed-Book Parametric Prior Prompt ($\ell_q \in \{\text{en}, \text{ko}\}$):}
+\begin{quote}
+\scriptsize\ttfamily
+\textbf{[System (EN)]} You are a factual question-answering assistant. Answer the question concisely with ONLY the exact entity, year, or number.\\
+\textbf{[User (EN)]} Question: \{query\_en\}? \quad Output ONLY the exact entity, year, or number: \quad Answer:\\[2pt]
+\textbf{[System (KO)]} \ko{당신은 사실 기반 질의응답 도우미입니다. 질문에 대해 부연 설명 없이 오직 정답 개체명, 연도, 또는 숫자만 간결하게 답하세요.}\\
+\textbf{[User (KO)]} \ko{질문}: \{query\_ko\}? \quad \ko{오직 정확한 개체명, 연도, 또는 숫자만 출력하세요}: \quad \ko{정답}:\\
+\normalfont\scriptsize\emph{(Ojik jeonghwakhan gaechemyeong, yeondo, ttoneun sutja-man chullyeokhaseyo: ``Output only the exact entity, year, or number:'')}
+\end{quote}
